@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  visits   Visit[]
+  settings UserSettings?
+
+  @@map("users")
+}
+
+model UserSettings {
+  id               String  @id @default(cuid())
+  userId           String  @unique @map("user_id")
+  theme            String  @default("dark")
+  dateFormat       String  @default("MM/DD/YYYY") @map("date_format")
+  defaultSortBy    String  @default("createdAt") @map("default_sort_by")
+  defaultSortOrder String  @default("desc") @map("default_sort_order")
+  homeCurrency     String  @default("USD") @map("home_currency")
+  distanceUnit     String  @default("km") @map("distance_unit")
+  defaultTripType  String? @map("default_trip_type")
+  defaultBudget    String? @map("default_budget")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model City {
+  id         String   @id @default(cuid())
+  name       String
+  country    String
+  state      String?
+  latitude   Float
+  longitude  Float
+  timezone   String?
+  population Int?
+  externalId String?  @map("external_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  visits Visit[]
+
+  @@unique([name, country, latitude, longitude])
+  @@index([name])
+  @@index([country])
+  @@index([latitude, longitude])
+  @@map("cities")
+}
+
+model Visit {
+  id          String    @id @default(cuid())
+  rating      Int       @db.SmallInt
+  comment     String?   @db.Text
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  tripType    String?   @map("trip_type")
+  budgetLevel String?   @map("budget_level")
+  wouldReturn Boolean?  @map("would_return")
+  highlights  String?   @db.Text
+  transport   String?
+  userId      String    @map("user_id")
+  cityId      String    @map("city_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId, startDate])
+  @@index([userId])
+  @@index([cityId])
+  @@index([startDate])
+  @@index([rating])
+  @@map("visits")
+}
