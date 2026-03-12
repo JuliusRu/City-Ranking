@@ -150,6 +150,7 @@ export function GlobeViewer({
     initCesium();
 
     return () => {
+      setCesiumReady(false);
       if (viewer && !viewer.isDestroyed()) {
         const cleanup = (viewer as unknown as Record<string, unknown>)
           ._resizeCleanup as (() => void) | undefined;
@@ -172,22 +173,29 @@ export function GlobeViewer({
     viewer.entities.removeAll();
 
     // Add markers
+    console.log("[GlobeViewer] Adding", markers.length, "markers, cesiumReady:", cesiumReady);
     for (const marker of markers) {
-      const color = Cesium.Color.fromCssColorString(
-        ratingToColor(marker.rating)
-      );
+      let color: InstanceType<typeof Cesium.Color>;
+      try {
+        color = Cesium.Color.fromCssColorString(
+          ratingToColor(marker.rating)
+        );
+      } catch {
+        console.warn("[GlobeViewer] Failed to parse color for", marker.cityName, ratingToColor(marker.rating));
+        color = Cesium.Color.YELLOW;
+      }
 
       viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(
           marker.longitude,
-          marker.latitude
+          marker.latitude,
+          1000
         ),
         point: {
           pixelSize: GLOBE.MARKER_SIZE,
           color,
           outlineColor: Cesium.Color.WHITE,
           outlineWidth: 2,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
         label: {

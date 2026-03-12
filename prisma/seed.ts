@@ -9,29 +9,26 @@ async function main() {
   await prisma.city.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create user — seasoned traveler persona
+  // Create user
   const user = await prisma.user.create({
     data: {
       id: "default-user",
-      name: "Elena Vasquez",
-      email: "elena.vasquez@wanderlust.io",
+      name: "Julius",
+      email: "julius@cityranking.app",
     },
   });
 
   console.log("Created user:", user.name);
 
-  // Custom settings — she prefers light theme, ISO dates, EUR
   await prisma.userSettings.create({
     data: {
       userId: user.id,
       theme: "dark",
-      dateFormat: "YYYY-MM-DD",
+      dateFormat: "DD.MM.YYYY",
       defaultSortBy: "rating",
       defaultSortOrder: "desc",
       homeCurrency: "EUR",
       distanceUnit: "km",
-      defaultTripType: "solo",
-      defaultBudget: "moderate",
     },
   });
 
@@ -39,18 +36,88 @@ async function main() {
 
   // ── Cities ────────────────────────────────────────────────
   const cities = await Promise.all([
-    // 0 — Tokyo
+    // 0 — Frankfurt
     prisma.city.create({
       data: {
-        name: "Tokyo",
-        country: "Japan",
-        latitude: 35.6762,
-        longitude: 139.6503,
-        population: 13960000,
-        timezone: "Asia/Tokyo",
+        name: "Frankfurt",
+        country: "Germany",
+        state: "Hessen",
+        latitude: 50.1109,
+        longitude: 8.6821,
+        population: 773068,
+        timezone: "Europe/Berlin",
       },
     }),
-    // 1 — Paris
+    // 1 — London
+    prisma.city.create({
+      data: {
+        name: "London",
+        country: "United Kingdom",
+        state: "England",
+        latitude: 51.5074,
+        longitude: -0.1278,
+        population: 8982000,
+        timezone: "Europe/London",
+      },
+    }),
+    // 2 — Hamburg
+    prisma.city.create({
+      data: {
+        name: "Hamburg",
+        country: "Germany",
+        latitude: 53.5511,
+        longitude: 9.9937,
+        population: 1945532,
+        timezone: "Europe/Berlin",
+      },
+    }),
+    // 3 — Melbourne
+    prisma.city.create({
+      data: {
+        name: "Melbourne",
+        country: "Australia",
+        state: "Victoria",
+        latitude: -37.8136,
+        longitude: 144.9631,
+        population: 5078193,
+        timezone: "Australia/Melbourne",
+      },
+    }),
+    // 4 — Hong Kong
+    prisma.city.create({
+      data: {
+        name: "Hong Kong",
+        country: "China (SAR)",
+        latitude: 22.3193,
+        longitude: 114.1694,
+        population: 7500700,
+        timezone: "Asia/Hong_Kong",
+      },
+    }),
+    // 5 — Rotterdam
+    prisma.city.create({
+      data: {
+        name: "Rotterdam",
+        country: "Netherlands",
+        state: "South Holland",
+        latitude: 51.9244,
+        longitude: 4.4777,
+        population: 651446,
+        timezone: "Europe/Amsterdam",
+      },
+    }),
+    // 6 — Wien
+    prisma.city.create({
+      data: {
+        name: "Wien",
+        country: "Austria",
+        latitude: 48.2082,
+        longitude: 16.3738,
+        population: 1911191,
+        timezone: "Europe/Vienna",
+      },
+    }),
+    // 7 — Paris
     prisma.city.create({
       data: {
         name: "Paris",
@@ -61,19 +128,18 @@ async function main() {
         timezone: "Europe/Paris",
       },
     }),
-    // 2 — New York
+    // 8 — Rom
     prisma.city.create({
       data: {
-        name: "New York",
-        country: "United States",
-        state: "New York",
-        latitude: 40.7128,
-        longitude: -74.006,
-        population: 8336000,
-        timezone: "America/New_York",
+        name: "Rom",
+        country: "Italy",
+        latitude: 41.9028,
+        longitude: 12.4964,
+        population: 2873000,
+        timezone: "Europe/Rome",
       },
     }),
-    // 3 — Sydney
+    // 9 — Sydney
     prisma.city.create({
       data: {
         name: "Sydney",
@@ -85,31 +151,121 @@ async function main() {
         timezone: "Australia/Sydney",
       },
     }),
-    // 4 — Cape Town
+    // 10 — München
     prisma.city.create({
       data: {
-        name: "Cape Town",
-        country: "South Africa",
-        state: "Western Cape",
-        latitude: -33.9249,
-        longitude: 18.4241,
-        population: 4618000,
-        timezone: "Africa/Johannesburg",
+        name: "München",
+        country: "Germany",
+        state: "Bayern",
+        latitude: 48.1351,
+        longitude: 11.582,
+        population: 1512491,
+        timezone: "Europe/Berlin",
       },
     }),
-    // 5 — Barcelona
+    // 11 — Kuala Lumpur
     prisma.city.create({
       data: {
-        name: "Barcelona",
-        country: "Spain",
-        state: "Catalonia",
-        latitude: 41.3874,
-        longitude: 2.1686,
-        population: 1621000,
-        timezone: "Europe/Madrid",
+        name: "Kuala Lumpur",
+        country: "Malaysia",
+        latitude: 3.139,
+        longitude: 101.6869,
+        population: 1982000,
+        timezone: "Asia/Kuala_Lumpur",
       },
     }),
-    // 6 — Bangkok
+    // 12 — Amsterdam
+    prisma.city.create({
+      data: {
+        name: "Amsterdam",
+        country: "Netherlands",
+        state: "North Holland",
+        latitude: 52.3676,
+        longitude: 4.9041,
+        population: 907976,
+        timezone: "Europe/Amsterdam",
+      },
+    }),
+    // 13 — Prag
+    prisma.city.create({
+      data: {
+        name: "Prag",
+        country: "Czech Republic",
+        latitude: 50.0755,
+        longitude: 14.4378,
+        population: 1335084,
+        timezone: "Europe/Prague",
+      },
+    }),
+    // 14 — Berlin
+    prisma.city.create({
+      data: {
+        name: "Berlin",
+        country: "Germany",
+        latitude: 52.52,
+        longitude: 13.405,
+        population: 3748148,
+        timezone: "Europe/Berlin",
+      },
+    }),
+    // 15 — Budapest
+    prisma.city.create({
+      data: {
+        name: "Budapest",
+        country: "Hungary",
+        latitude: 47.4979,
+        longitude: 19.0402,
+        population: 1752286,
+        timezone: "Europe/Budapest",
+      },
+    }),
+    // 16 — Stockholm
+    prisma.city.create({
+      data: {
+        name: "Stockholm",
+        country: "Sweden",
+        latitude: 59.3293,
+        longitude: 18.0686,
+        population: 978770,
+        timezone: "Europe/Stockholm",
+      },
+    }),
+    // 17 — Los Angeles
+    prisma.city.create({
+      data: {
+        name: "Los Angeles",
+        country: "United States",
+        state: "California",
+        latitude: 34.0522,
+        longitude: -118.2437,
+        population: 3898747,
+        timezone: "America/Los_Angeles",
+      },
+    }),
+    // 18 — Kiew
+    prisma.city.create({
+      data: {
+        name: "Kiew",
+        country: "Ukraine",
+        latitude: 50.4501,
+        longitude: 30.5234,
+        population: 2962180,
+        timezone: "Europe/Kiev",
+      },
+    }),
+    // 19 — Köln
+    prisma.city.create({
+      data: {
+        name: "Köln",
+        country: "Germany",
+        state: "Nordrhein-Westfalen",
+        latitude: 50.9375,
+        longitude: 6.9603,
+        population: 1083498,
+        timezone: "Europe/Berlin",
+      },
+    }),
+    // 20 — Bangkok
     prisma.city.create({
       data: {
         name: "Bangkok",
@@ -120,81 +276,84 @@ async function main() {
         timezone: "Asia/Bangkok",
       },
     }),
-    // 7 — Reykjavik
+    // 21 — San Francisco
     prisma.city.create({
       data: {
-        name: "Reykjavik",
-        country: "Iceland",
-        latitude: 64.1466,
-        longitude: -21.9426,
-        population: 131000,
-        timezone: "Atlantic/Reykjavik",
+        name: "San Francisco",
+        country: "United States",
+        state: "California",
+        latitude: 37.7749,
+        longitude: -122.4194,
+        population: 873965,
+        timezone: "America/Los_Angeles",
       },
     }),
-    // 8 — Marrakech
+    // 22 — San Diego
     prisma.city.create({
       data: {
-        name: "Marrakech",
-        country: "Morocco",
-        latitude: 31.6295,
-        longitude: -7.9811,
-        population: 928850,
-        timezone: "Africa/Casablanca",
+        name: "San Diego",
+        country: "United States",
+        state: "California",
+        latitude: 32.7157,
+        longitude: -117.1611,
+        population: 1423851,
+        timezone: "America/Los_Angeles",
       },
     }),
-    // 9 — Buenos Aires
+    // 23 — Athen
     prisma.city.create({
       data: {
-        name: "Buenos Aires",
-        country: "Argentina",
-        latitude: -34.6037,
-        longitude: -58.3816,
-        population: 3075646,
-        timezone: "America/Argentina/Buenos_Aires",
+        name: "Athen",
+        country: "Greece",
+        latitude: 37.9838,
+        longitude: 23.7275,
+        population: 664046,
+        timezone: "Europe/Athens",
       },
     }),
-    // 10 — Kyoto
+    // 24 — Las Vegas
     prisma.city.create({
       data: {
-        name: "Kyoto",
-        country: "Japan",
-        latitude: 35.0116,
-        longitude: 135.7681,
-        population: 1475183,
-        timezone: "Asia/Tokyo",
+        name: "Las Vegas",
+        country: "United States",
+        state: "Nevada",
+        latitude: 36.1699,
+        longitude: -115.1398,
+        population: 641903,
+        timezone: "America/Los_Angeles",
       },
     }),
-    // 11 — Lisbon
+    // 25 — Phnom Penh
     prisma.city.create({
       data: {
-        name: "Lisbon",
-        country: "Portugal",
-        latitude: 38.7223,
-        longitude: -9.1393,
-        population: 544851,
-        timezone: "Europe/Lisbon",
+        name: "Phnom Penh",
+        country: "Cambodia",
+        latitude: 11.5564,
+        longitude: 104.9282,
+        population: 2129371,
+        timezone: "Asia/Phnom_Penh",
       },
     }),
-    // 12 — Mexico City
+    // 26 — Tunis
     prisma.city.create({
       data: {
-        name: "Mexico City",
-        country: "Mexico",
-        latitude: 19.4326,
-        longitude: -99.1332,
-        population: 9209944,
-        timezone: "America/Mexico_City",
+        name: "Tunis",
+        country: "Tunisia",
+        latitude: 36.8065,
+        longitude: 10.1815,
+        population: 693210,
+        timezone: "Africa/Tunis",
       },
     }),
-    // 13 — Istanbul
+    // 27 — Brüssel
     prisma.city.create({
       data: {
-        name: "Istanbul",
-        country: "Turkey",
-        latitude: 41.0082,
-        longitude: 28.9784,
-        population: 15460000,
-        timezone: "Europe/Istanbul",
+        name: "Brüssel",
+        country: "Belgium",
+        latitude: 50.8503,
+        longitude: 4.3517,
+        population: 1209000,
+        timezone: "Europe/Brussels",
       },
     }),
   ]);
@@ -202,291 +361,453 @@ async function main() {
   console.log(`Created ${cities.length} cities`);
 
   // ── Visits ────────────────────────────────────────────────
+  // Since only years are known, startDate uses July 1 of that year.
+  // For cities with multiple visit years, each year becomes a separate visit.
+  // The comment is attached to the most recent visit only.
+  const d = (year: number) => new Date(`${year}-07-01`);
+
   const visits = await Promise.all([
-    // Tokyo — first trip, golden week madness
+    // Frankfurt — 2015, 2019, 2022
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[0].id,
         rating: 92,
-        comment:
-          "Arrived during Golden Week — the energy was electric. Got lost in Shimokitazawa's vintage shops and ate the best ramen of my life at a standing bar under the Yurakucho tracks.",
-        startDate: new Date("2023-04-28"),
-        endDate: new Date("2023-05-05"),
+        startDate: d(2015),
         tripType: "solo",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Shimokitazawa thrift stores, Yurakucho ramen alley, Meiji Shrine at dawn, Akihabara arcades",
-        transport: "flew",
       },
     }),
-    // Tokyo — cherry blossom return
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[0].id,
-        rating: 97,
-        comment:
-          "Came back specifically for cherry blossom season. Sat under the sakura in Ueno Park with a bento and sake — genuinely one of the happiest afternoons of my life.",
-        startDate: new Date("2025-03-28"),
-        endDate: new Date("2025-04-04"),
-        tripType: "couple",
-        budgetLevel: "expensive",
-        wouldReturn: true,
-        highlights:
-          "Hanami in Ueno Park, teamLab Planets barefoot, Tsukiji outer market tuna auction, Harajuku on a Sunday",
-        transport: "flew",
+        rating: 92,
+        startDate: d(2019),
+        tripType: "solo",
       },
     }),
-    // Paris — rainy but romantic
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[0].id,
+        rating: 92,
+        comment: "Einfach die beste Stadt in DE",
+        startDate: d(2022),
+        tripType: "solo",
+      },
+    }),
+
+    // London — 2022, 2025
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[1].id,
-        rating: 84,
-        comment:
-          "It rained almost every day but somehow that made it more charming. Spent hours in the Musee d'Orsay. The crepes near Montmartre are unfairly good.",
-        startDate: new Date("2024-02-12"),
-        endDate: new Date("2024-02-16"),
-        tripType: "couple",
-        budgetLevel: "expensive",
-        wouldReturn: true,
-        highlights:
-          "Musee d'Orsay impressionists, crepes in Montmartre, Shakespeare and Company bookshop, Seine at dusk",
-        transport: "train",
-      },
-    }),
-    // New York — chaotic solo trip
-    prisma.visit.create({
-      data: {
-        userId: user.id,
-        cityId: cities[2].id,
-        rating: 79,
-        comment:
-          "NYC is exhausting in the best way. Walked 25km on day one. The jazz club in the Village was a highlight — tiny room, incredible musicians.",
-        startDate: new Date("2024-01-08"),
-        endDate: new Date("2024-01-12"),
+        rating: 91,
+        startDate: d(2022),
         tripType: "solo",
-        budgetLevel: "expensive",
-        wouldReturn: true,
-        highlights:
-          "Village Vanguard jazz, Central Park in snow, Brooklyn Bridge sunrise, pizza in Williamsburg",
-        transport: "flew",
       },
     }),
-    // New York — work trip
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[1].id,
+        rating: 91,
+        comment:
+          "Spannende Stadt, bester Gebäudemix – Nachtleben ausbaufähig",
+        startDate: d(2025),
+        tripType: "solo",
+      },
+    }),
+
+    // Hamburg — 2017, 2018–2024
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[2].id,
-        rating: 65,
-        comment:
-          "Conference in Midtown. Didn't get to explore much but squeezed in a morning run through Central Park and a late-night slice on the way back.",
-        startDate: new Date("2025-06-02"),
-        endDate: new Date("2025-06-04"),
-        tripType: "business",
-        budgetLevel: "luxury",
-        wouldReturn: true,
-        highlights: "Central Park morning jog, Michelin dinner with clients",
-        transport: "flew",
+        rating: 88,
+        startDate: d(2017),
+        tripType: "solo",
       },
     }),
-    // Sydney — summer road trip
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[2].id,
+        rating: 88,
+        comment: "Die vielfältigste Stadt in DE",
+        startDate: d(2018),
+        endDate: new Date("2024-07-01"),
+        tripType: "solo",
+      },
+    }),
+
+    // Melbourne — 2016
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[3].id,
-        rating: 88,
+        rating: 85,
         comment:
-          "Rented a van and drove up the coast from Sydney. Bondi at 6am with barely anyone around is something else. The harbor at sunset looks photoshopped.",
-        startDate: new Date("2023-12-20"),
-        endDate: new Date("2023-12-28"),
-        tripType: "friends",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Bondi sunrise swim, Opera House at night, Blue Mountains hike, fish and chips at Watson's Bay",
-        transport: "flew",
+          "Guter Mix aus Megacity, Natur (Strand etc) gute Hochhäuser",
+        startDate: d(2016),
+        tripType: "solo",
       },
     }),
-    // Cape Town — wine country detour
+
+    // Hong Kong — 2012, 2017
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[4].id,
-        rating: 93,
-        comment:
-          "Table Mountain at sunset was a spiritual experience. Rented a car and spent two days doing wine tastings in Stellenbosch and Franschhoek. Penguins at Boulders Beach were the cherry on top.",
-        startDate: new Date("2024-09-05"),
-        endDate: new Date("2024-09-12"),
-        tripType: "couple",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Table Mountain sunset, Stellenbosch wine route, Boulders Beach penguins, Bo-Kaap colorful houses, Chapman's Peak drive",
-        transport: "flew",
+        rating: 85,
+        startDate: d(2012),
+        tripType: "solo",
       },
     }),
-    // Barcelona — quick train stop
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[4].id,
+        rating: 85,
+        comment: "Spannend, sicher und aufregend + viele Hochhäuser",
+        startDate: d(2017),
+        tripType: "solo",
+      },
+    }),
+
+    // Rotterdam — 2022
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[5].id,
-        rating: 76,
-        comment:
-          "Only had a day — hopped off the train from Paris. La Sagrada Familia was even more stunning than I expected. Wish I'd had more time for the Gothic Quarter.",
-        startDate: new Date("2024-02-17"),
-        endDate: null,
-        tripType: "couple",
-        budgetLevel: "budget",
-        wouldReturn: true,
-        highlights: "Sagrada Familia interior, Las Ramblas, Gothic Quarter wander",
-        transport: "train",
+        rating: 84,
+        comment: "Tolle Gebäude",
+        startDate: d(2022),
+        tripType: "solo",
       },
     }),
-    // Bangkok — street food heaven
+
+    // Wien — 2016, 2021
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[6].id,
         rating: 83,
-        comment:
-          "The street food alone is worth the flight. Ate pad thai from a cart at 2am in Chinatown. The Grand Palace was overwhelming in the best way. Took a longtail boat through the canals.",
-        startDate: new Date("2025-01-15"),
-        endDate: new Date("2025-01-21"),
+        startDate: d(2016),
         tripType: "solo",
-        budgetLevel: "budget",
-        wouldReturn: true,
-        highlights:
-          "Chinatown street food at midnight, Grand Palace, Wat Pho reclining Buddha, canal longtail boat tour, Chatuchak weekend market",
-        transport: "flew",
       },
     }),
-    // Reykjavik — northern lights chase
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[6].id,
+        rating: 83,
+        comment: "Abwechslungsreich, tolle moderne & historische Gebäude",
+        startDate: d(2021),
+        tripType: "solo",
+      },
+    }),
+
+    // Paris — 2019, 2025
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[7].id,
-        rating: 91,
-        comment:
-          "Drove the Golden Circle in a snowstorm and it was worth every white-knuckle moment. Saw the northern lights on our last night — we stood outside in -10C for an hour and nobody cared about the cold.",
-        startDate: new Date("2024-11-14"),
-        endDate: new Date("2024-11-19"),
-        tripType: "couple",
-        budgetLevel: "expensive",
-        wouldReturn: true,
-        highlights:
-          "Northern lights at Thingvellir, Blue Lagoon, Gullfoss waterfall in snow, Hallgrimskirkja, hot dogs at Baejarins Beztu",
-        transport: "flew",
+        rating: 82,
+        startDate: d(2019),
+        tripType: "solo",
       },
     }),
-    // Marrakech — sensory overload
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[7].id,
+        rating: 82,
+        comment:
+          "Beide Besuche über Erwartungen, scheint im langsamen Untergang zu sein",
+        startDate: d(2025),
+        tripType: "solo",
+      },
+    }),
+
+    // Rom — 2013
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[8].id,
-        rating: 80,
+        rating: 81,
         comment:
-          "The medina is like stepping into another century. Got hopelessly lost three times and loved it. The riad we stayed in had the most peaceful courtyard. Jemaa el-Fnaa at night is sensory overload in the best way.",
-        startDate: new Date("2024-05-01"),
-        endDate: new Date("2024-05-05"),
-        tripType: "couple",
-        budgetLevel: "budget",
-        wouldReturn: true,
-        highlights:
-          "Jemaa el-Fnaa night market, riad courtyard breakfast, leather tanneries, Jardin Majorelle, haggling in the souks",
-        transport: "flew",
+          "Spannende Historie, doch wenig modernes / globales Gefühl",
+        startDate: d(2013),
+        tripType: "solo",
       },
     }),
-    // Buenos Aires — tango and steak
+
+    // Sydney — 2012, 2016
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[9].id,
-        rating: 87,
-        comment:
-          "Buenos Aires has a melancholy beauty that gets under your skin. The steak is absurdly good and absurdly cheap. Watched a tango show in San Telmo that brought me to tears. La Boca is pure color.",
-        startDate: new Date("2024-03-10"),
-        endDate: new Date("2024-03-17"),
+        rating: 80,
+        startDate: d(2012),
         tripType: "solo",
-        budgetLevel: "budget",
-        wouldReturn: true,
-        highlights:
-          "San Telmo tango show, parrilla in Palermo, La Boca street art, Recoleta Cemetery, late-night milonga",
-        transport: "flew",
       },
     }),
-    // Kyoto — temples in autumn
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[9].id,
+        rating: 80,
+        comment:
+          "Nahezu perfekte Stadt – wenig Hügel, gutes Wetter, viele Hochhäuser",
+        startDate: d(2016),
+        tripType: "solo",
+      },
+    }),
+
+    // München — no specific year
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[10].id,
-        rating: 96,
-        comment:
-          "Kyoto in autumn is the most beautiful place I've ever seen. The red maples at Tofukuji made me stop breathing. Fushimi Inari at 5:30am — completely alone with ten thousand torii gates. This is the trip I'll remember when I'm old.",
-        startDate: new Date("2023-11-10"),
-        endDate: new Date("2023-11-16"),
+        rating: 80,
+        comment: "Zu wenig Hochhäuser",
+        startDate: d(2020),
         tripType: "solo",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Fushimi Inari at dawn, Tofukuji autumn leaves, Arashiyama bamboo grove, kaiseki dinner in Gion, Kinkaku-ji in afternoon light",
-        transport: "train",
       },
     }),
-    // Lisbon — tiles and pasteis
+
+    // Kuala Lumpur — 2018
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[11].id,
-        rating: 89,
-        comment:
-          "Lisbon stole my heart. Every street has those gorgeous azulejo tiles, every corner has a pasteis de nata. Rode tram 28 like a tourist and loved every second. The sunset from Miradouro da Graca was absurd.",
-        startDate: new Date("2025-05-18"),
-        endDate: new Date("2025-05-23"),
-        tripType: "friends",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Tram 28, pasteis de nata at Manteigaria, Miradouro da Graca sunset, Time Out Market, Alfama fado bar",
-        transport: "flew",
+        rating: 79,
+        comment: "Spannende wachsende Stadt, etwas zu weitläufig",
+        startDate: d(2018),
+        tripType: "solo",
       },
     }),
-    // Mexico City — food pilgrimage
+
+    // Amsterdam — 2018
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[12].id,
-        rating: 90,
-        comment:
-          "Went specifically for the food and it exceeded every expectation. Tacos al pastor from a street cart at midnight. The Frida Kahlo museum hit different than I expected — intimate and raw. Chapultepec Park on a Sunday is pure joy.",
-        startDate: new Date("2025-08-05"),
-        endDate: new Date("2025-08-11"),
-        tripType: "friends",
-        budgetLevel: "budget",
-        wouldReturn: true,
-        highlights:
-          "Tacos al pastor at El Huequito, Frida Kahlo museum, Chapultepec Sunday, mezcal in Roma Norte, Teotihuacan pyramids day trip",
-        transport: "flew",
+        rating: 79,
+        comment: "Fast erfroren",
+        startDate: d(2018),
+        tripType: "solo",
       },
     }),
-    // Istanbul — bridges between worlds
+
+    // Prag — 2021
     prisma.visit.create({
       data: {
         userId: user.id,
         cityId: cities[13].id,
-        rating: 86,
-        comment:
-          "A city that literally bridges two continents and it shows in everything — the food, the architecture, the people. The Blue Mosque and Hagia Sophia back to back left me speechless. Turkish breakfast is a whole event.",
-        startDate: new Date("2025-10-01"),
-        endDate: new Date("2025-10-06"),
+        rating: 78,
+        comment: "Nette Stadt",
+        startDate: d(2021),
         tripType: "solo",
-        budgetLevel: "moderate",
-        wouldReturn: true,
-        highlights:
-          "Hagia Sophia, Blue Mosque, Grand Bazaar, Bosphorus ferry at sunset, Turkish breakfast spread, Balat neighborhood",
-        transport: "flew",
+      },
+    }),
+
+    // Berlin — 2010, 2020, 2021, 2023
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[14].id,
+        rating: 77,
+        startDate: d(2010),
+        tripType: "solo",
+      },
+    }),
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[14].id,
+        rating: 77,
+        startDate: d(2020),
+        tripType: "solo",
+      },
+    }),
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[14].id,
+        rating: 77,
+        startDate: d(2021),
+        tripType: "solo",
+      },
+    }),
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[14].id,
+        rating: 77,
+        comment: "Aufregende Stadt",
+        startDate: d(2023),
+        tripType: "solo",
+      },
+    }),
+
+    // Budapest — 2021
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[15].id,
+        rating: 77,
+        comment: "Ganz ok, zu wenig moderne Gebäude",
+        startDate: d(2021),
+        tripType: "solo",
+      },
+    }),
+
+    // Stockholm — 2025
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[16].id,
+        rating: 75,
+        comment: "Unter den Erwartungen",
+        startDate: d(2025),
+        tripType: "solo",
+      },
+    }),
+
+    // Los Angeles — 2014
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[17].id,
+        rating: 75,
+        comment: "Erste Megacity, war cool mit Ron",
+        startDate: d(2014),
+        tripType: "friends",
+      },
+    }),
+
+    // Kiew — 2019
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[18].id,
+        rating: 74,
+        comment:
+          "Man kann gut leben, sehr hügelig, zu viele Kommunistengebäude",
+        startDate: d(2019),
+        tripType: "solo",
+      },
+    }),
+
+    // Köln — no specific year
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[19].id,
+        rating: 70,
+        comment: "Zu dreckig, aber der Dom ist cool",
+        startDate: d(2020),
+        tripType: "solo",
+      },
+    }),
+
+    // Bangkok — 2018
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[20].id,
+        rating: 70,
+        comment: "War leider krank und habe nicht viel gesehen",
+        startDate: d(2018),
+        tripType: "solo",
+      },
+    }),
+
+    // San Francisco — 2014
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[21].id,
+        rating: 70,
+        comment:
+          "Unter Vorstellungen, zu hügelig, zu viele Obdachlose",
+        startDate: d(2014),
+        tripType: "solo",
+      },
+    }),
+
+    // San Diego — 2014
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[22].id,
+        rating: 70,
+        comment: "Wenig von der Stadt gesehen",
+        startDate: d(2014),
+        tripType: "solo",
+      },
+    }),
+
+    // Athen — 2024
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[23].id,
+        rating: 69,
+        comment:
+          "Dreckig, unordentlich, zu wenig Grün – Geschichte ist cool",
+        startDate: d(2024),
+        tripType: "solo",
+      },
+    }),
+
+    // Las Vegas — 2014
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[24].id,
+        rating: 63,
+        comment: "Zu künstlich, war zu jung",
+        startDate: d(2014),
+        tripType: "solo",
+      },
+    }),
+
+    // Phnom Penh — 2018
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[25].id,
+        rating: 60,
+        comment: "Zu unterentwickelt",
+        startDate: d(2018),
+        tripType: "solo",
+      },
+    }),
+
+    // Tunis — 2024
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[26].id,
+        rating: 60,
+        comment: "Unfreundliche Menschen, Essen hat krank gemacht",
+        startDate: d(2024),
+        tripType: "solo",
+      },
+    }),
+
+    // Brüssel — 2025
+    prisma.visit.create({
+      data: {
+        userId: user.id,
+        cityId: cities[27].id,
+        rating: 32,
+        comment: "Hässlich",
+        startDate: d(2025),
+        tripType: "solo",
       },
     }),
   ]);

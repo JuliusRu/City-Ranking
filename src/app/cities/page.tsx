@@ -1,11 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useCityOverviews } from "@/hooks/useCities";
 import { ratingToColor, ratingToDisplay } from "@/lib/rating";
 
+type SortBy = "ranking" | "name" | "visitCount" | "lastVisited";
+
 export default function CitiesPage() {
   const { cities, isLoading, error } = useCityOverviews();
+  const [sortBy, setSortBy] = useState<SortBy>("ranking");
+
+  const sortedCities = [...cities].sort((a, b) => {
+    switch (sortBy) {
+      case "ranking":
+        return b.avgRating - a.avgRating;
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "visitCount":
+        return b.visitCount - a.visitCount;
+      case "lastVisited":
+        return new Date(b.lastVisited).getTime() - new Date(a.lastVisited).getTime();
+    }
+  });
 
   if (error) {
     return (
@@ -52,20 +69,49 @@ export default function CitiesPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-6 text-2xl font-bold">Cities</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Cities</h1>
+        <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+          {([
+            ["ranking", "Ranking"],
+            ["name", "Name"],
+            ["visitCount", "Visits"],
+            ["lastVisited", "Recent"],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setSortBy(value)}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                sortBy === value
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cities.map((city) => (
+        {sortedCities.map((city, index) => (
           <Link
             key={city.id}
             href={`/cities/${city.id}`}
             className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-muted"
           >
             <div className="flex items-start justify-between">
-              <div>
+              <div className="flex items-center gap-2">
+                {sortBy === "ranking" && (
+                  <span className="text-sm font-bold text-muted-foreground">
+                    {index + 1}.
+                  </span>
+                )}
+                <div>
                 <h2 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {city.name}
                 </h2>
                 <p className="text-sm text-muted-foreground">{city.country}</p>
+                </div>
               </div>
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold"

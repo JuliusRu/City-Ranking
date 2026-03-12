@@ -18,22 +18,28 @@ export function GlobeWrapper() {
   } | null>(null);
   const { visits } = useVisits({ limit: 100 });
 
-  const markers: GlobeMarker[] = useMemo(
-    () =>
-      visits.map((v) => ({
-        id: v.id,
-        cityId: v.city.id,
-        cityName: v.city.name,
-        country: v.city.country,
-        latitude: v.city.latitude,
-        longitude: v.city.longitude,
-        rating: v.rating,
-        startDate: v.startDate,
-        endDate: v.endDate,
-        comment: v.comment,
-      })),
-    [visits]
-  );
+  // Deduplicate visits by city — use the highest rating and most recent visit info
+  const markers: GlobeMarker[] = useMemo(() => {
+    const cityMap = new Map<string, GlobeMarker>();
+    for (const v of visits) {
+      const existing = cityMap.get(v.city.id);
+      if (!existing || v.rating > existing.rating) {
+        cityMap.set(v.city.id, {
+          id: v.id,
+          cityId: v.city.id,
+          cityName: v.city.name,
+          country: v.city.country,
+          latitude: v.city.latitude,
+          longitude: v.city.longitude,
+          rating: v.rating,
+          startDate: v.startDate,
+          endDate: v.endDate,
+          comment: v.comment,
+        });
+      }
+    }
+    return Array.from(cityMap.values());
+  }, [visits]);
 
   const handleFlyTo = useCallback((marker: GlobeMarker) => {
     setFlyToTarget({ longitude: marker.longitude, latitude: marker.latitude });
@@ -47,8 +53,15 @@ export function GlobeWrapper() {
     startTour(handleFlyTo);
   }
 
+  // Debug: log markers to console
+  console.log("[GlobeWrapper] markers count:", markers.length, "visits count:", visits.length);
+
   return (
     <div className="relative h-full w-full">
+      {/* Temporary debug overlay */}
+      <div className="absolute top-4 right-4 z-50 rounded bg-black/80 px-3 py-2 text-xs text-white">
+        Visits: {visits.length} | Markers: {markers.length}
+      </div>
       <GlobeViewer
         markers={markers}
         onMarkerClick={setSelectedMarker}
