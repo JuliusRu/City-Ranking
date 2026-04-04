@@ -12,7 +12,7 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 interface GlobeViewerProps {
   markers?: GlobeMarker[];
   onMarkerClick: (marker: GlobeMarker) => void;
-  flyToTarget?: { longitude: number; latitude: number } | null;
+  flyToTarget?: { longitude: number; latitude: number; key: number } | null;
 }
 
 export function GlobeViewer({
@@ -24,7 +24,7 @@ export function GlobeViewer({
   const viewerRef = useRef<unknown>(null);
   const cesiumRef = useRef<typeof import("cesium") | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cesiumReady, setCesiumReady] = useState(false);
+  const [cesiumReady, setCesiumReady] = useState(0);
 
   const flyTo = useCallback(
     (longitude: number, latitude: number) => {
@@ -32,7 +32,7 @@ export function GlobeViewer({
       const viewer = viewerRef.current as InstanceType<
         typeof import("cesium").Viewer
       > | null;
-      if (!Cesium || !viewer) return;
+      if (!Cesium || !viewer || viewer.isDestroyed()) return;
 
       viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(
@@ -55,11 +55,16 @@ export function GlobeViewer({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    let cancelled = false;
     let viewer: InstanceType<typeof import("cesium").Viewer> | null = null;
 
     async function initCesium() {
       try {
         const Cesium = await import("cesium");
+
+        // If the effect was cleaned up while we were loading, bail out
+        if (cancelled) return;
+
         cesiumRef.current = Cesium;
 
         // Set base URL for Cesium assets
@@ -96,7 +101,9 @@ export function GlobeViewer({
           Cesium.Color.fromCssColorString("#1a1a2e");
 
         viewerRef.current = viewer;
-        setCesiumReady(true);
+
+        // Use a counter so each init triggers a fresh marker render
+        setCesiumReady((prev) => prev + 1);
 
         // Force resize to fill container
         viewer.resize();
@@ -140,6 +147,7 @@ export function GlobeViewer({
         (viewer as unknown as Record<string, unknown>)._resizeCleanup =
           handleResize;
       } catch (err) {
+        if (cancelled) return;
         console.error("Failed to initialize Cesium:", err);
         setError(
           "Could not load the 3D globe. Please refresh the page or try a different browser."
@@ -150,7 +158,7 @@ export function GlobeViewer({
     initCesium();
 
     return () => {
-      setCesiumReady(false);
+      cancelled = true;
       if (viewer && !viewer.isDestroyed()) {
         const cleanup = (viewer as unknown as Record<string, unknown>)
           ._resizeCleanup as (() => void) | undefined;
@@ -167,21 +175,18 @@ export function GlobeViewer({
     const viewer = viewerRef.current as InstanceType<
       typeof import("cesium").Viewer
     > | null;
-    if (!Cesium || !viewer) return;
+    if (!Cesium || !viewer || viewer.isDestroyed() || cesiumReady === 0) return;
 
     // Remove existing entities
     viewer.entities.removeAll();
 
-    // Add markers
-    console.log("[GlobeViewer] Adding", markers.length, "markers, cesiumReady:", cesiumReady);
     for (const marker of markers) {
+      // Convert HSL to hex for Cesium compatibility
+      const cssColor = ratingToColor(marker.rating);
       let color: InstanceType<typeof Cesium.Color>;
       try {
-        color = Cesium.Color.fromCssColorString(
-          ratingToColor(marker.rating)
-        );
+        color = Cesium.Color.fromCssColorString(cssColor);
       } catch {
-        console.warn("[GlobeViewer] Failed to parse color for", marker.cityName, ratingToColor(marker.rating));
         color = Cesium.Color.YELLOW;
       }
 
@@ -189,13 +194,14 @@ export function GlobeViewer({
         position: Cesium.Cartesian3.fromDegrees(
           marker.longitude,
           marker.latitude,
-          1000
+          0
         ),
         point: {
-          pixelSize: GLOBE.MARKER_SIZE,
+          pixelSize: 12,
           color,
           outlineColor: Cesium.Color.WHITE,
           outlineWidth: 2,
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
         label: {
@@ -206,6 +212,7 @@ export function GlobeViewer({
           outlineColor: Cesium.Color.BLACK,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(0, -16),
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
             GLOBE.LABEL_NEAR_DISTANCE,
             GLOBE.LABEL_FAR_DISTANCE

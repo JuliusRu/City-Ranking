@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { GlobeViewer } from "./GlobeViewer";
 import { CityInfoPanel } from "./CityInfoPanel";
 import { VisitSidebar } from "./VisitSidebar";
@@ -15,7 +15,9 @@ export function GlobeWrapper() {
   const [flyToTarget, setFlyToTarget] = useState<{
     longitude: number;
     latitude: number;
+    key: number;
   } | null>(null);
+  const flyKeyRef = useRef(0);
   const { visits } = useVisits({ limit: 100 });
 
   // Deduplicate visits by city — use the highest rating and most recent visit info
@@ -42,9 +44,13 @@ export function GlobeWrapper() {
   }, [visits]);
 
   const handleFlyTo = useCallback((marker: GlobeMarker) => {
-    setFlyToTarget({ longitude: marker.longitude, latitude: marker.latitude });
+    flyKeyRef.current += 1;
+    setFlyToTarget({
+      longitude: marker.longitude,
+      latitude: marker.latitude,
+      key: flyKeyRef.current,
+    });
     setSelectedMarker(marker);
-    setTimeout(() => setFlyToTarget(null), 100);
   }, []);
 
   const { isTouring, startTour, stopTour } = useGlobeTour(markers);
@@ -53,15 +59,8 @@ export function GlobeWrapper() {
     startTour(handleFlyTo);
   }
 
-  // Debug: log markers to console
-  console.log("[GlobeWrapper] markers count:", markers.length, "visits count:", visits.length);
-
   return (
     <div className="relative h-full w-full">
-      {/* Temporary debug overlay */}
-      <div className="absolute top-4 right-4 z-50 rounded bg-black/80 px-3 py-2 text-xs text-white">
-        Visits: {visits.length} | Markers: {markers.length}
-      </div>
       <GlobeViewer
         markers={markers}
         onMarkerClick={setSelectedMarker}
@@ -94,12 +93,7 @@ export function GlobeWrapper() {
         <CityInfoPanel
           marker={selectedMarker}
           onClose={() => setSelectedMarker(null)}
-          onFlyTo={() =>
-            setFlyToTarget({
-              longitude: selectedMarker.longitude,
-              latitude: selectedMarker.latitude,
-            })
-          }
+          onFlyTo={() => handleFlyTo(selectedMarker)}
         />
       )}
     </div>
