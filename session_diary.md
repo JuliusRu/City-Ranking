@@ -117,12 +117,20 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
 - **Bewusst offen:** nach Login ist der Account leer — die 39 Visits hängen am `default-user`
   (Migration = Task #5). Logged-out-Gating der Hauptseiten kommt mit der Landing (#6).
 
+### Teil 7 — Multi-User-Migration: Account verknüpft (Task #5)
+- `rummeljulius@gmail.com` in Supabase angelegt (uid `ad5e5f95-…`). Der bestehende `default-user`
+  (39 Visits) wurde im Dev-DB mit dieser `auth_id` + E-Mail verknüpft → beim Login erscheinen
+  Julius' Daten sofort (keine Datenkopie, nur Identität angehängt).
+- **`session=false` beim Signup → „Confirm email" ist im Supabase-Dashboard noch AN.** Login geht
+  erst nach (a) „Confirm email" ausschalten oder (b) Klick auf den Bestätigungslink in der Mail.
+- Prod-Seite der Migration passiert später beim Deploy (Prod-DB hat die neuen Spalten noch nicht).
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
   `_prisma_migrations` — harmlos, kann bei Bedarf aufgeräumt werden).
-- **Julius offen:** (1) Supabase → „Confirm email" ausschalten + Browser-Signup mit echter
-  E-Mail testen; (2) Google später (eigene OAuth-App + Provider). Anon key ist da.
+- **Julius offen:** (1) Supabase → „Confirm email" ausschalten (oder Bestätigungslink klicken),
+  dann mit rummeljulius@gmail.com einloggen → die 39 Visits sollten erscheinen; (2) Google später.
 - Nächste Build-Schritte: Multi-User-Migration der Seed-Daten (#5), Logged-out-Gating/Landing
   (#6), Auth-Integrationstests + DB-Authz-Doku (#2-Rest).
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.
