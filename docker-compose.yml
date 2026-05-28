@@ -6,8 +6,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: city_ranking
+    # Host port 5433 to avoid clashing with a native Postgres on localhost:5432
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

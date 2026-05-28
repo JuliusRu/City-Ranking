@@ -70,16 +70,22 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
     Dev (lokales Postgres) vs. Prod (Supabase-Pooler).
   - `.env.example` zeigte bereits auf lokales Postgres (`localhost:5432/city_ranking`),
     passend zur vorhandenen `docker-compose.yml` → Dev-DB ist im Prinzip schon angelegt.
-  - **Noch offen (Task #12):** (a) Docker starten → `docker compose up -d` → `npm run db:migrate`
-    gegen die Dev-DB testen; (b) Baseline auf bestehenden DBs einmalig als angewandt markieren
-    (`prisma migrate resolve --applied 0_init`) — sonst will `migrate deploy` sie neu anlegen;
-    *auf Prod bewusst/separat ausführen*; (c) `migrate deploy` in den Coolify-Release-Schritt
-    einhängen (Achtung: Standalone-Runner-Image ist schlank, Prisma-CLI ist dort nicht
-    automatisch dabei — Variante mit eigenem Release-Command klären).
+  - **Dev-DB validiert (Task #12 erledigt):** `docker compose up -d`, `migrate deploy` wendet
+    `0_init` an, `db:seed` füllt 1 User / 28 Städte / 39 Visits. Workflow läuft end-to-end.
+  - **Stolperfalle (wichtig fürs Verständnis):** Auf der Dev-Maschine lauscht ein **nativer
+    Postgres** (Postgres.app/Homebrew) auf `127.0.0.1:5432` + `[::1]:5432` und verdeckt bei
+    `localhost` den Docker-Container (der auf `*:5432` published war). Folge: `migrate deploy`
+    landete im nativen Postgres (alte `city_ranking` mit Tabellen → P3005 „schema not empty"),
+    während der Container leer war. **Fix:** Container-Port auf **5433** (`docker-compose.yml` +
+    `.env.example` angepasst), seither eindeutig der isolierte Dev-Container.
+  - **Verschoben nach Task #21 (Ops):** (a) Baseline `0_init` einmalig auf der **Prod**-DB als
+    angewandt markieren (`migrate resolve --applied 0_init`); (b) `migrate deploy` in den
+    Coolify-Release-Schritt einhängen (Standalone-Runner ist schlank, Prisma-CLI nicht dabei).
 
 ### Offene Punkte (Stand Ende des Eintrags)
-- **Docker läuft auf der Dev-Maschine nicht** → lokale Dev-DB (docker-compose.yml existiert)
-  kann noch nicht hochgefahren/migriert werden. Julius muss Docker Desktop starten.
+- Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
+  bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
+  `_prisma_migrations` — harmlos, kann bei Bedarf aufgeräumt werden).
 - Julius-Aktionen für Auth: Supabase-Dashboard (Provider Google aktivieren, später X/LinkedIn-
   Dev-Apps), Custom SMTP (Brevo) hinterlegen, SUPABASE_URL + anon key als Env bereitstellen.
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.
