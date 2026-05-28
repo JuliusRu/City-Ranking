@@ -125,6 +125,16 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   erst nach (a) „Confirm email" ausschalten oder (b) Klick auf den Bestätigungslink in der Mail.
 - Prod-Seite der Migration passiert später beim Deploy (Prod-DB hat die neuen Spalten noch nicht).
 
+### Teil 8 — Login funktioniert + iOS-App in die Planung
+- **Login verifiziert:** nach dem Confirm-Klick liefert `signInWithPassword` (rummeljulius@gmail.com)
+  session=true, uid `ad5e5f95-…` (= verknüpfter `default-user` mit 39 Visits). Auth steht → Task #1 ✅.
+  (Stolperstein war nur: „Confirm email" wirkt nicht rückwirkend; Bestätigungslink musste geklickt werden.)
+- **Neue Richtung: Produkt auch als native App mit iOS-Fokus.** War vorher nur als „Mobile/PWA"
+  (#19) angedeutet, jetzt explizit. Architektur-Konsequenz (in #19 + product-vision festgehalten):
+  **API-first** — die bestehende `/api/*` + Supabase-Auth sind schon app-tauglich; Logik in der
+  API-Schicht halten, damit Web + iOS dasselbe Backend nutzen. Empfehlung Expo/React Native.
+  Knackpunkt: Cesium-Globe ist web-lastig → auf iOS native Map/Globe; „Sign in with Apple" nötig.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
