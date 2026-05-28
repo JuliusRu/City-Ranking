@@ -7,6 +7,32 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## Stand & nächste Schritte (Resume hier)
+
+**Live-Status (Stand 2026-05-28):** ranking.place ist live als **Multi-User-Web-App** — Landing,
+Signup/Login (Supabase E-Mail+Passwort), per-User-Journal/Globe, Gating. Web-v1 steht.
+
+**Offener Verifikationspunkt:** Der Cesium-Globe-Fix (`unsafe-eval` in CSP) ist deployt, aber
+Julius' Browser-Bestätigung „Globe + 40 Städte sichtbar" stand bei Session-Ende noch aus →
+morgen zuerst kurz prüfen.
+
+**Lokal entwickeln:** `docker compose up -d` (Dev-DB auf **:5433**) → `npm run dev` (**:3000**).
+Login lokal/prod: rummeljulius@gmail.com.
+
+**Architektur-Merkpunkte (wichtig!):**
+- Auth ist **client-seitig** (Supabase-Browser-Client) — **keine Server Actions**, die brechen
+  hinter dem Coolify/Cloudflare-Proxy (ID-Skew + Cookie).
+- CSP braucht `*.supabase.co` (connect-src) + `unsafe-eval`/`wasm-unsafe-eval` (Cesium).
+- Supabase-Env wird im Code von Whitespace bereinigt (Coolify verstümmelte den anon key).
+- Prod-DB-Migrationen laufen **manuell** via Pooler-URL (`migrate resolve`+`migrate deploy`);
+  Automatisierung in Coolify-Release steht noch aus (#21).
+
+**Nächste Themen (Vorschlag-Priorität):** #3 Secret-Rotation (vor Community-Launch!) · #7
+öffentliches Profil `@username` + Teilen (viraler Loop) · #15 Onboarding/Empty-State · #8 Härtung ·
+#21 Migrate-Automatisierung. Backlog: #9/#10 (Social), #11/#14 (Restaurants+Pro), #19 (iOS-App).
+
+---
+
 ## 2026-05-28 — Pivot zu B2C + Fundament-Setup
 
 ### Kontext / Ausgangslage
