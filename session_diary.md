@@ -180,6 +180,16 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
 - Fix: `connect-src` um `https://*.supabase.co wss://*.supabase.co` ergänzt (src/config/csp.ts).
   → Client-Login kann jetzt mit Supabase sprechen. Verifikation durch Julius nach Redeploy.
 
+### Teil 13 — Prod-Login 401: anon key in Coolify durch Whitespace verstümmelt
+- Nach der CSP-Freigabe ging der Supabase-Call durch, aber Supabase antwortete **401**
+  (= ungültiger apikey, NICHT falsches Passwort — das wäre 400).
+- Befund: im Prod-Bundle steckte der anon key **mit Leerzeichen mitten im JWT**
+  (`…cm9sZSI6Im   Fub24…`) — der Coolify-Wert wurde beim Einfügen durch Whitespace/Umbruch zerstört
+  (die URL war zufällig sauber, daher ging der Request an die richtige Domain).
+- Fix (robust, im Code): URL+Key aus der Env mit `.replace(/\s/g,"")` bereinigen — neuer
+  `lib/supabase/env.ts`, genutzt von client/server/middleware. JWT/URL enthalten nie Whitespace →
+  der Build ist damit immun gegen verunstaltete Coolify-Werte; Coolify muss nicht angefasst werden.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
