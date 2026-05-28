@@ -146,6 +146,19 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   vorher unbemerkt). Verschoben nach **`src/middleware.ts`** → läuft in Dev *und* Prod. Verifiziert:
   geschützte Routen → 307 /login, CSP-Header wieder da.
 
+### Teil 10 — Live auf ranking.place (Prod-Deploy)
+- Prod-DB migriert (`0_init` gebaselined via `migrate resolve` + Auth-Migration via `migrate deploy`),
+  Prod-`default-user` mit Auth-UID verknüpft (40 Visits).
+- Coolify-Env gesetzt (`NEXT_PUBLIC_SUPABASE_URL` + `ANON_KEY`, Build- **und** Runtime). `git push` →
+  Coolify Docker-Build (Node 22) → Deploy in ~3,5 Min. **Kein Downtime** (Migration additiv, alter
+  Build lief bis zum Swap weiter).
+- Verifiziert auf ranking.place: `/` = Landing, `/cities` → 307 /login (Gating), `/api/stats` → 401,
+  CSP-Nonce-Header aktiv. **Web-v1 ist live: Landing + Auth + Gating + Scoping.**
+- Browser-Login-Test durch Julius steht noch aus (Session-basiert, per curl nicht prüfbar).
+- **Wichtig, jetzt da öffentlich:** Secrets rotieren (#3, weiterhin offen!); „Confirm email" ist aus →
+  keine E-Mail-Verifikation (Bot-/Fake-Accounts möglich → Härtung #8/Turnstile); öffentliches Teilen
+  (#7) fehlt noch. Prod-Migrationen liefen diesmal manuell von Julius' Maschine — Automatisierung in #21.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
