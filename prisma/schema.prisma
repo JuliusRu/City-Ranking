@@ -7,17 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Visibility {
+  PRIVATE
+  FRIENDS
+  PUBLIC
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String?  @unique
-  name      String?
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  authId        String?  @unique @map("auth_id")
+  email         String?  @unique
+  name          String?
+  username      String?  @unique
+  bio           String?  @db.Text
+  avatarUrl     String?  @map("avatar_url")
+  publicProfile Boolean  @default(false) @map("public_profile")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   visits   Visit[]
   settings UserSettings?
 
+  @@index([username])
   @@map("users")
 }
 
@@ -68,6 +79,7 @@ model Visit {
   endDate     DateTime? @map("end_date")
   tripType    String?   @map("trip_type")
   budgetLevel String?   @map("budget_level")
+  visibility  Visibility @default(PRIVATE)
   wouldReturn Boolean?  @map("would_return")
   highlights  String?   @db.Text
   transport   String?

@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
     "cesium": "^1.138.0",
     "next": "16.1.6",
     "prisma": "^6.19.2",

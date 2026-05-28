@@ -82,10 +82,29 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
     angewandt markieren (`migrate resolve --applied 0_init`); (b) `migrate deploy` in den
     Coolify-Release-Schritt einhängen (Standalone-Runner ist schlank, Prisma-CLI nicht dabei).
 
+### Teil 5 — Auth-Schema-Änderungen + Supabase-Libs (Task #4 anteilig, #1 begonnen)
+- Entscheidung: **Supabase Auth, nur Google** (kein Magic-Link/X/LinkedIn vorerst). Damit
+  entfällt der Custom-SMTP-Bedarf für v1.
+- Schema erweitert + migriert (Dev-DB 5433, Migration
+  `20260528120000_add_auth_profile_visibility`): `users.auth_id` (unique, Link zur Supabase-
+  Auth-UID), `users.username` (unique + Index), `users.bio`, `users.public_profile`;
+  `visits.visibility` (Enum PRIVATE/FRIENDS/PUBLIC, Default PRIVATE).
+  *Warum nur diese Felder:* die auth-/v1-kritischen + retrofit-teuren. Generisches Place,
+  List/Trip, Follow/Events bewusst **aufgeschoben** auf ihre Feature-Phasen (#7/#9/#10/#11) —
+  keine spekulativen Leertabellen.
+- `@supabase/ssr` + `@supabase/supabase-js` installiert.
+- Migration deterministisch erzeugt: `prisma migrate dev` ist non-interaktiv nicht nutzbar →
+  per `migrate diff --from-url <dev> --to-schema-datamodel` SQL erzeugt, dann `migrate deploy`.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
   `_prisma_migrations` — harmlos, kann bei Bedarf aufgeräumt werden).
-- Julius-Aktionen für Auth: Supabase-Dashboard (Provider Google aktivieren, später X/LinkedIn-
-  Dev-Apps), Custom SMTP (Brevo) hinterlegen, SUPABASE_URL + anon key als Env bereitstellen.
+- **Julius-Aktionen für Google-Login (geht nicht ohne dich):** (1) Google-OAuth-App in der
+  Google Cloud Console anlegen (Client-ID + Secret), Redirect-URI =
+  `https://gvrocksdppdidkqwbrsx.supabase.co/auth/v1/callback`; (2) im Supabase-Dashboard den
+  Google-Provider aktivieren + Client-ID/Secret eintragen; (3) mir `NEXT_PUBLIC_SUPABASE_URL`
+  (= https://gvrocksdppdidkqwbrsx.supabase.co) + `anon key` geben. Kein SMTP nötig (Google-only).
+- Nächster Build-Schritt (ohne dich): Supabase-Client/Server-Helper + Middleware-Session,
+  `getCurrentUserId()` auf echten Session-Lookup, Login-UI (Google) + Auth-Callback.
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.
