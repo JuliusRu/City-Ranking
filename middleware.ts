@@ -8,6 +8,10 @@ export function middleware(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  // Next.js reads the nonce from the CSP on the *request* headers and stamps it
+  // onto its own inline scripts. Without this, those scripts get no nonce and
+  // the response CSP blocks them, breaking hydration.
+  requestHeaders.set("Content-Security-Policy", csp);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
