@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
-import { signout } from "@/app/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -37,6 +37,11 @@ export function Header() {
   }, [dropdownOpen]);
 
   const initial = user?.name?.charAt(0).toUpperCase() ?? "U";
+
+  async function handleSignOut() {
+    await createClient().auth.signOut();
+    window.location.assign("/login");
+  }
 
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm">
@@ -98,14 +103,12 @@ export function Header() {
                       Profile &amp; Settings
                     </Link>
                     <div className="my-1 border-t border-border" />
-                    <form action={signout}>
-                      <button
-                        type="submit"
-                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent"
-                      >
-                        Sign Out
-                      </button>
-                    </form>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent"
+                    >
+                      Sign Out
+                    </button>
                   </div>
                 )}
               </div>

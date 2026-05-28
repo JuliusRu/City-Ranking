@@ -159,6 +159,20 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   keine E-Mail-Verifikation (Bot-/Fake-Accounts möglich → Härtung #8/Turnstile); öffentliches Teilen
   (#7) fehlt noch. Prod-Migrationen liefen diesmal manuell von Julius' Maschine — Automatisierung in #21.
 
+### Teil 11 — Prod-Login-Bug: weg von Server Actions, hin zu client-seitiger Auth
+- Symptom auf Prod: Login schlug fehl. Konsole: `POST /login 404` + `UnrecognizedActionError:
+  Server Action … was not found on the server`.
+- Ursache: Next.js vergibt **Server-Action-IDs pro Build neu**; der Browser hatte Assets eines
+  älteren Builds → ID unbekannt → 404. (`allowedOrigins` in next.config ergänzt — war aber NICHT die Ursache.)
+- Inkognito beseitigte den 404 (bestätigt Build-Skew/Cache), aber der Login etablierte trotzdem
+  **keine Session** (`/api/user` blieb 401) → Server-Action-Cookie-Handling hinter Coolify/Cloudflare
+  unzuverlässig.
+- **Fix: Auth komplett client-seitig** über den Supabase-Browser-Client (`signInWithPassword` /
+  `signUp` / `signOut` im Client, danach `window.location.assign('/')`). Keine Server Actions mehr →
+  die ganze Fehlerklasse (ID-Skew, Origin, Cookie) entfällt. `login/actions.ts` + `auth/actions.ts`
+  entfernt; Header-Logout client-seitig. Lokal verifiziert (rendert, kein Compile-Fehler);
+  Prod-Verifikation durch Julius nach Redeploy. NEXT_SERVER_ACTIONS_ENCRYPTION_KEY damit nicht nötig.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
