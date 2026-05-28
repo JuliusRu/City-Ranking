@@ -24,6 +24,10 @@ export function apiNotFound(entity = "Resource") {
   return apiError(`${entity} not found`, 404);
 }
 
+export function apiUnauthorized() {
+  return apiError("Unauthorized", 401);
+}
+
 export function apiRateLimited() {
   return apiError("Too many requests", 429);
 }

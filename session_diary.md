@@ -96,15 +96,33 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
 - Migration deterministisch erzeugt: `prisma migrate dev` ist non-interaktiv nicht nutzbar →
   per `migrate diff --from-url <dev> --to-schema-datamodel` SQL erzeugt, dann `migrate deploy`.
 
+### Teil 6 — E-Mail+Passwort-Auth gebaut (Task #1 Kern, #2 Routen gescopt, #4 fertig)
+- Entscheidung verfeinert: **E-Mail+Passwort zuerst, Google später** (kein externer OAuth-Provider
+  nötig → autonom baubar/testbar). Anon key von Julius erhalten.
+- Implementiert:
+  - `lib/supabase/server.ts` + `client.ts` (@supabase/ssr).
+  - Middleware: Supabase-Session-Refresh + Cookie-Handling **sauber mit der CSP/Nonce-Logik
+    zusammengeführt** (Reihenfolge: requestHeaders mit Nonce+CSP → response → getUser → Response-Header).
+  - `lib/auth.ts`: `getSessionUser()` + async `getCurrentUserId()` (legt lokales Profil per `authId` an).
+  - Alle 6 API-Routen + 2 Server-Pages auf Session-User gescopt; unauth → 401 (Routen) bzw.
+    `redirect("/login")` (Pages). Neuer Helper `apiUnauthorized()`.
+  - `/login` (Sign in / Sign up) mit zwei Server-Actions; Logout-Action; Header-„Sign Out" verdrahtet.
+  - `.env.local`: Dev = lokale DB (5433) + gehostetes Supabase für Auth.
+- Lokal verifiziert: Dev-Server bootet sauber, `/login` rendert, `/api/stats` & `/api/cities?withStats`
+  unauth → 401, keine Compile-/React-Fehler (Button-`name`+Funktions-`formAction`-Bug → via zwei
+  getrennte Actions `login`/`signup` behoben).
+- **Noch im Browser zu verifizieren (Julius):** echter Signup/Login. (a) Supabase-Dashboard →
+  „Confirm email" für jetzt **aus**; (b) reservierte Domains wie example.com werden abgelehnt → echte
+  E-Mail nutzen.
+- **Bewusst offen:** nach Login ist der Account leer — die 39 Visits hängen am `default-user`
+  (Migration = Task #5). Logged-out-Gating der Hauptseiten kommt mit der Landing (#6).
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
   `_prisma_migrations` — harmlos, kann bei Bedarf aufgeräumt werden).
-- **Julius-Aktionen für Google-Login (geht nicht ohne dich):** (1) Google-OAuth-App in der
-  Google Cloud Console anlegen (Client-ID + Secret), Redirect-URI =
-  `https://gvrocksdppdidkqwbrsx.supabase.co/auth/v1/callback`; (2) im Supabase-Dashboard den
-  Google-Provider aktivieren + Client-ID/Secret eintragen; (3) mir `NEXT_PUBLIC_SUPABASE_URL`
-  (= https://gvrocksdppdidkqwbrsx.supabase.co) + `anon key` geben. Kein SMTP nötig (Google-only).
-- Nächster Build-Schritt (ohne dich): Supabase-Client/Server-Helper + Middleware-Session,
-  `getCurrentUserId()` auf echten Session-Lookup, Login-UI (Google) + Auth-Callback.
+- **Julius offen:** (1) Supabase → „Confirm email" ausschalten + Browser-Signup mit echter
+  E-Mail testen; (2) Google später (eigene OAuth-App + Provider). Anon key ist da.
+- Nächste Build-Schritte: Multi-User-Migration der Seed-Daten (#5), Logged-out-Gating/Landing
+  (#6), Auth-Integrationstests + DB-Authz-Doku (#2-Rest).
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.

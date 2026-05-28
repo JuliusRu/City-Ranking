@@ -7,6 +7,7 @@ import {
   apiNotFound,
   apiValidationError,
   apiRateLimited,
+  apiUnauthorized,
 } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { updateVisitSchema } from "@/lib/validators/visit";
@@ -24,7 +25,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     const visit = await prisma.visit.findFirst({
       where: { id, userId },
@@ -49,7 +51,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
     const body = await request.json();
 
     const parsed = updateVisitSchema.safeParse(body);
@@ -83,7 +86,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     const existing = await prisma.visit.findFirst({
       where: { id, userId },

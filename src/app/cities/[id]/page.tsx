@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
@@ -25,7 +25,8 @@ export default async function CityDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
 
   const city = await prisma.city.findUnique({
     where: { id },

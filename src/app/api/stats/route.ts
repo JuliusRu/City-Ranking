@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
-import { apiSuccess, apiError, apiRateLimited } from "@/lib/api-response";
+import { apiSuccess, apiError, apiRateLimited, apiUnauthorized } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { RATE_LIMITS } from "@/config/constants";
 
@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
   if (!allowed) return apiRateLimited();
 
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     const visits = await prisma.visit.findMany({
       where: { userId },

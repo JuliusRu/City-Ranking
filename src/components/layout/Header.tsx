@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
+import { signout } from "@/app/auth/actions";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -88,12 +89,14 @@ export function Header() {
                   Profile &amp; Settings
                 </Link>
                 <div className="my-1 border-t border-border" />
-                <button
-                  disabled
-                  className="w-full px-4 py-2 text-left text-sm text-muted-foreground opacity-50"
-                >
-                  Sign Out
-                </button>
+                <form action={signout}>
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent"
+                  >
+                    Sign Out
+                  </button>
+                </form>
               </div>
             )}
           </div>

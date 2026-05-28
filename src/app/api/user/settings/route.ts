@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
-import { apiSuccess, apiError, apiValidationError } from "@/lib/api-response";
+import { apiSuccess, apiError, apiValidationError, apiUnauthorized } from "@/lib/api-response";
 import { updateSettingsSchema } from "@/lib/validators/settings";
 import { ZodError } from "zod";
 
 export async function GET() {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     // Upsert: return existing or create defaults
     const settings = await prisma.userSettings.upsert({
@@ -25,7 +26,8 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
     const body = await request.json();
     const data = updateSettingsSchema.parse(body);
 

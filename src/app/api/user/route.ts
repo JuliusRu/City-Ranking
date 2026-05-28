@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
-import { apiSuccess, apiError, apiNotFound, apiValidationError } from "@/lib/api-response";
+import { apiSuccess, apiError, apiNotFound, apiValidationError, apiUnauthorized } from "@/lib/api-response";
 import { updateUserSchema } from "@/lib/validators/user";
 import { ZodError } from "zod";
 
 export async function GET() {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -27,7 +28,8 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
     const body = await request.json();
     const data = updateUserSchema.parse(body);
 

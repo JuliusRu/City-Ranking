@@ -6,6 +6,7 @@ import {
   apiError,
   apiValidationError,
   apiRateLimited,
+  apiUnauthorized,
 } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { createVisitSchema, visitQuerySchema } from "@/lib/validators/visit";
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest) {
     if (!parsed.success) return apiValidationError(parsed.error);
 
     const { page, limit, sortBy, sortOrder, cityId } = parsed.data;
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
 
     const where = {
       userId,
@@ -69,7 +71,8 @@ export async function POST(request: NextRequest) {
     const parsed = createVisitSchema.safeParse(body);
     if (!parsed.success) return apiValidationError(parsed.error);
 
-    const userId = getCurrentUserId();
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
     const { cityId, rating, comment, startDate, endDate, tripType, budgetLevel, wouldReturn, highlights, transport } = parsed.data;
 
     // Verify city exists

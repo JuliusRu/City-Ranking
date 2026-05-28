@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
@@ -11,7 +11,8 @@ export default async function VisitDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const userId = getCurrentUserId();
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
 
   const visit = await prisma.visit.findFirst({
     where: { id, userId },

@@ -6,6 +6,7 @@ import {
   apiError,
   apiValidationError,
   apiRateLimited,
+  apiUnauthorized,
 } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { createCitySchema } from "@/lib/validators/city";
@@ -23,7 +24,8 @@ export async function GET(request: NextRequest) {
     const withStats = request.nextUrl.searchParams.get("withStats") === "true";
 
     if (withStats) {
-      const userId = getCurrentUserId();
+      const userId = await getCurrentUserId();
+      if (!userId) return apiUnauthorized();
       const cities = await prisma.city.findMany({
         where: { visits: { some: { userId } } },
         include: {
