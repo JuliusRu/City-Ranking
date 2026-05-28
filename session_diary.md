@@ -190,6 +190,13 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   `lib/supabase/env.ts`, genutzt von client/server/middleware. JWT/URL enthalten nie Whitespace →
   der Build ist damit immun gegen verunstaltete Coolify-Werte; Coolify muss nicht angefasst werden.
 
+### Teil 14 — Globe (Cesium) braucht unsafe-eval/WASM in der CSP
+- Login funktioniert jetzt (anon-key-Whitespace-Fix). Aber Cesium lud nicht:
+  `EvalError … 'unsafe-eval' is not allowed` + `WebAssembly.instantiate() … violates CSP`.
+- Fix: `script-src` um `'unsafe-eval' 'wasm-unsafe-eval'` ergänzt (src/config/csp.ts).
+  Tradeoff: schwächt den XSS-Schutz minimal, ist bei Cesium aber unvermeidbar. Später ggf. nur
+  auf die Globe-Routen eingrenzen (statt global).
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
