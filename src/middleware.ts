@@ -38,7 +38,25 @@ export async function middleware(request: NextRequest) {
       },
     }
   );
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Gating: send logged-out users away from app routes, and logged-in users
+  // away from the login page. APIs handle their own 401, and "/" renders the
+  // public landing when logged out, so neither is gated here.
+  const path = request.nextUrl.pathname;
+  const protectedPrefixes = ["/cities", "/stats", "/visits", "/settings"];
+  const isProtected = protectedPrefixes.some(
+    (p) => path === p || path.startsWith(p + "/")
+  );
+  if ((!user && isProtected) || (user && path === "/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = user ? "/" : "/login";
+    const redirectResponse = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => redirectResponse.cookies.set(c));
+    return redirectResponse;
+  }
 
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("X-Frame-Options", "DENY");

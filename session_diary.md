@@ -135,12 +135,23 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   API-Schicht halten, damit Web + iOS dasselbe Backend nutzen. Empfehlung Expo/React Native.
   Knackpunkt: Cesium-Globe ist web-lastig → auf iOS native Map/Globe; „Sign in with Apple" nötig.
 
+### Teil 9 — Landing + Gating (Task #6) + Middleware-Location-Bug gefixt
+- `/` ist jetzt Server-Component mit Auth-Weiche: ausgeloggt → **Landing** (Marketing + CTA),
+  eingeloggt → Globe (nach `GlobeClient` ausgelagert, weil `dynamic ssr:false` nur in Client-Comps geht).
+- Middleware-**Gating**: ausgeloggt + geschützte Route (/cities, /stats, /visits, /settings) → Redirect
+  `/login`; eingeloggt auf `/login` → Redirect `/`. APIs behalten ihr eigenes 401; `/` bleibt öffentlich.
+- Header: ausgeloggt → „Sign In"-Link; eingeloggt → Nav + Avatar/Logout.
+- **Bug gefunden & gefixt:** `middleware.ts` lag im **Projekt-Root**, obwohl das Projekt `src/` nutzt →
+  **Turbopack-Dev hat sie ignoriert** (kein CSP, kein Gating; der Prod-Build hatte sie erkannt, daher
+  vorher unbemerkt). Verschoben nach **`src/middleware.ts`** → läuft in Dev *und* Prod. Verifiziert:
+  geschützte Routen → 307 /login, CSP-Header wieder da.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
   `_prisma_migrations` — harmlos, kann bei Bedarf aufgeräumt werden).
-- **Julius offen:** (1) Supabase → „Confirm email" ausschalten (oder Bestätigungslink klicken),
-  dann mit rummeljulius@gmail.com einloggen → die 39 Visits sollten erscheinen; (2) Google später.
+- Login funktioniert ✓ (rummeljulius@gmail.com, nach Confirm-Klick). Offen: Google-Login,
+  Prod-Deploy (Prod-DB-Migration + Coolify-Supabase-Env + Push), #2-Integrationstests.
 - Nächste Build-Schritte: Multi-User-Migration der Seed-Daten (#5), Logged-out-Gating/Landing
   (#6), Auth-Integrationstests + DB-Authz-Doku (#2-Rest).
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.

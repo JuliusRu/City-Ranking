@@ -16,7 +16,7 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -46,60 +46,71 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <nav aria-label="Main navigation" className="flex gap-1">
-            {navItems.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Avatar dropdown */}
-          <div className="relative ml-2" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
-              aria-label="User menu"
-              aria-expanded={dropdownOpen}
+          {isLoading ? null : !user ? (
+            <Link
+              href="/login"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
             >
-              {initial}
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border bg-card py-1 shadow-lg">
-                <Link
-                  href="/settings"
-                  onClick={() => setDropdownOpen(false)}
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-accent"
+              Sign In
+            </Link>
+          ) : (
+            <>
+              <nav aria-label="Main navigation" className="flex gap-1">
+                {navItems.map((item) => {
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Avatar dropdown */}
+              <div className="relative ml-2" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
+                  aria-label="User menu"
+                  aria-expanded={dropdownOpen}
                 >
-                  Profile &amp; Settings
-                </Link>
-                <div className="my-1 border-t border-border" />
-                <form action={signout}>
-                  <button
-                    type="submit"
-                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent"
-                  >
-                    Sign Out
-                  </button>
-                </form>
+                  {initial}
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border bg-card py-1 shadow-lg">
+                    <Link
+                      href="/settings"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-accent"
+                    >
+                      Profile &amp; Settings
+                    </Link>
+                    <div className="my-1 border-t border-border" />
+                    <form action={signout}>
+                      <button
+                        type="submit"
+                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent"
+                      >
+                        Sign Out
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </header>
