@@ -173,6 +173,13 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
   entfernt; Header-Logout client-seitig. Lokal verifiziert (rendert, kein Compile-Fehler);
   Prod-Verifikation durch Julius nach Redeploy. NEXT_SERVER_ACTIONS_ENCRYPTION_KEY damit nicht nötig.
 
+### Teil 12 — CSP: Supabase in connect-src erlauben
+- Nach dem Umstieg auf client-seitige Auth rief der Browser direkt Supabase
+  (`…supabase.co/auth/v1/token`) — die CSP `connect-src` (nur self + OSM) blockte das.
+  (Bei serverseitigem Auth machte der *Server* den Call, daher vorher kein CSP-Thema.)
+- Fix: `connect-src` um `https://*.supabase.co wss://*.supabase.co` ergänzt (src/config/csp.ts).
+  → Client-Login kann jetzt mit Supabase sprechen. Verifikation durch Julius nach Redeploy.
+
 ### Offene Punkte (Stand Ende des Eintrags)
 - Dev-DB läuft jetzt isoliert auf `localhost:5433` (geseedet). Nativer Postgres auf 5432
   bleibt unangetastet (hat noch eine alte `city_ranking` + ein von uns versehentlich erzeugtes
