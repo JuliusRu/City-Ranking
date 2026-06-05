@@ -27,8 +27,8 @@ Set these in Coolify:
 
 - **Project ref**: `gvrocksdppdidkqwbrsx`
 - **Region**: Europe
-- **RLS**: Disabled (single-user app for now)
-- **Data API**: Disabled (using Prisma direct connection)
+- **RLS**: Enabled on all public tables (no policies → API roles denied; `postgres` owner bypasses). Now multi-user.
+- **Data API**: Should be disabled (app uses Prisma direct + GoTrue auth only). Verify in Supabase → Settings → API — it was found *enabled* on 2026-06-05 and is the backstop reason RLS must stay on.
 
 ## Database Commands
 

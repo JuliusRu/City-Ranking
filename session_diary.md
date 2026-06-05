@@ -31,7 +31,41 @@ Login lokal/prod: rummeljulius@gmail.com.
 öffentliches Profil `@username` + Teilen (viraler Loop) · #15 Onboarding/Empty-State · #8 Härtung ·
 #21 Migrate-Automatisierung. Backlog: #9/#10 (Social), #11/#14 (Restaurants+Pro), #19 (iOS-App).
 
+**Offen aus 2026-06-05 (sofort):** Migration `20260605000000_secure_prisma_migrations_rls`
+committen+pushen — Prod-DB hat sie schon, Repo noch nicht (kein Bruch-Risiko, da Coolify kein
+auto-`migrate deploy` macht, aber Drift).
+**Erledigt 2026-06-05:** Data API im Dashboard abgeschaltet (Integrations → Data API → „Enable
+Data API" aus). Verifiziert: `/rest/v1/*` → 503 (tot), `/auth/v1` → 200 (Login intakt). RLS bleibt Backstop.
+
 ---
+
+## 2026-06-05 — Supabase-Security-Advisor: RLS-Fix auf `_prisma_migrations`
+
+### Teil 15 — „rls_disabled_in_public" untersucht & behoben
+- **Auslöser:** Supabase-Advisor-Mail (CRITICAL, „Table publicly accessible", Projekt
+  `gvrocksdppdidkqwbrsx`). Verschärft dadurch, dass der anon key seit dem Client-Auth-Umstieg
+  **öffentlich** im Browser-Bundle liegt.
+- **Diagnose (empirisch, nicht geraten):** CLAUDE.md behauptete „Data API disabled" + „RLS überall an" —
+  **beides falsch**. REST-Probe mit anon key: `/rest/v1/*` liefert HTTP 200 → **Data API ist erreichbar**.
+  `pg_class.relrowsecurity` zeigte: die 4 App-Tabellen (cities/visits/users/user_settings) haben **RLS an**
+  (anon sah `*/0` → korrekt geschützt), nur **`_prisma_migrations` hatte RLS AUS**. Grants: `anon` +
+  `authenticated` hatten dort **SELECT/INSERT/UPDATE/DELETE/TRUNCATE**. = genau der geflaggte Befund.
+- **Risiko-Einordnung:** Datenleck **gering** (Tabelle enthält nur Migrationsnamen/Checksums/Zeitstempel,
+  keine Userdaten/Secrets). Integrität/Verfügbarkeit **mittel** (anon könnte TRUNCATE/Tampering → künftiges
+  `migrate deploy` bricht). Kein Daten-GAU, aber wegen public key zügig gefixt.
+- **Fix Ebene 1 (Code/DB):** neue Migration `20260605000000_secure_prisma_migrations_rls`:
+  `ALTER TABLE _prisma_migrations ENABLE ROW LEVEL SECURITY` + REVOKE der anon/authenticated-Grants.
+  Portabel via `DO`-Block (REVOKE nur wenn Rolle existiert → crasht nicht auf lokaler Dev-DB ohne
+  Supabase-Rollen). `postgres` *besitzt* die Tabelle → bypasst RLS → Prisma läuft unverändert (Beweis:
+  migrate deploy konnte sich selbst in die Tabelle schreiben). Auf **Prod** angewendet (`migrate deploy`,
+  direkter Host). Dev-DB (5433) lief nicht → wird beim nächsten Start nachgezogen.
+- **Verifiziert:** DB → `_prisma_migrations` relrowsecurity=t, keine anon/authenticated-Grants mehr.
+  REST → anon bekommt jetzt `HTTP 401 permission denied for table _prisma_migrations`. ✅
+- **Fix Ebene 2 (Dashboard, ERLEDIGT):** Data API abgeschaltet (Integrations → Data API → „Enable Data
+  API" aus + Save). App nutzt PostgREST nie (nur GoTrue `/auth/v1` + Prisma direkt) → komplette
+  REST-Angriffsfläche entfernt. Verifiziert: `/rest/v1/*` → 503 PGRST002, `/auth/v1/settings` → 200.
+- **Doku korrigiert:** CLAUDE.md (Architecture) + DEPLOYMENT.md auf die Realität gebracht (RLS überall an,
+  keine Policies = API-Rollen denied, Data API „should be disabled").
 
 ## 2026-05-28 — Pivot zu B2C + Fundament-Setup
 
