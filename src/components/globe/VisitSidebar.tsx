@@ -8,9 +8,10 @@ import type { GlobeMarker } from "@/types";
 interface VisitSidebarProps {
   markers: GlobeMarker[];
   onFlyTo: (marker: GlobeMarker) => void;
+  readOnly?: boolean;
 }
 
-export function VisitSidebar({ markers, onFlyTo }: VisitSidebarProps) {
+export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (markers.length === 0) {
@@ -28,17 +29,21 @@ export function VisitSidebar({ markers, onFlyTo }: VisitSidebarProps) {
           </svg>
         </div>
         <p className="text-sm font-medium text-foreground">
-          No cities visited yet
+          {readOnly ? "No public cities yet" : "No cities visited yet"}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Add your first visit to see it on the globe.
+          {readOnly
+            ? "This traveler hasn't shared any cities publicly."
+            : "Add your first visit to see it on the globe."}
         </p>
-        <Link
-          href="/visits/new"
-          className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Add Visit
-        </Link>
+        {!readOnly && (
+          <Link
+            href="/visits/new"
+            className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Add Visit
+          </Link>
+        )}
       </div>
     );
   }

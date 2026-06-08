@@ -8,9 +8,10 @@ interface CityInfoPanelProps {
   marker: GlobeMarker;
   onClose: () => void;
   onFlyTo?: () => void;
+  readOnly?: boolean;
 }
 
-export function CityInfoPanel({ marker, onClose, onFlyTo }: CityInfoPanelProps) {
+export function CityInfoPanel({ marker, onClose, onFlyTo, readOnly = false }: CityInfoPanelProps) {
   return (
     <div
       role="dialog"
@@ -87,12 +88,14 @@ export function CityInfoPanel({ marker, onClose, onFlyTo }: CityInfoPanelProps) 
             Fly to
           </button>
         )}
-        <Link
-          href={`/visits/${marker.id}`}
-          className="flex-1 rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          Edit
-        </Link>
+        {!readOnly && (
+          <Link
+            href={`/visits/${marker.id}`}
+            className="flex-1 rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Edit
+          </Link>
+        )}
       </div>
     </div>
   );

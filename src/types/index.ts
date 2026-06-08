@@ -59,8 +59,33 @@ export interface VisitData {
   updatedAt: string;
 }
 
+export type DistrictFrequency =
+  | "PASSED_THROUGH"
+  | "FEW_TIMES"
+  | "A_LOT"
+  | "BASED_HERE";
+
+export interface DistrictData {
+  id: string;
+  cityId: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  externalId: string | null;
+}
+
+export interface VisitDistrictData {
+  id: string;
+  visitId: string;
+  districtId: string;
+  rating: number;
+  frequency: DistrictFrequency;
+  district: DistrictData;
+}
+
 export interface VisitWithCity extends VisitData {
   city: CityData;
+  districts?: VisitDistrictData[];
 }
 
 export interface GlobeMarker {
@@ -90,7 +115,20 @@ export interface UserData {
   id: string;
   name: string | null;
   email: string | null;
+  username: string | null;
+  bio: string | null;
   avatarUrl: string | null;
+  publicProfile: boolean;
+}
+
+// Public-safe shape served on /@username — deliberately excludes email/authId.
+export interface PublicProfile {
+  username: string;
+  name: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  markers: GlobeMarker[];
+  stats: { cities: number; countries: number };
 }
 
 export interface UserSettingsData {

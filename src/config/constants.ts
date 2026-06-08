@@ -1,5 +1,46 @@
 export const APP_NAME = "City Ranking";
 
+// Absolute base URL — used for share links and OpenGraph metadata (which must be
+// absolute since crawlers fetch them out of any page context). Overridable via
+// env for preview deploys; defaults to the production domain.
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.ranking.place"
+).replace(/\/$/, "");
+
+// Usernames that can't be claimed — they'd collide with real routes (or read as
+// official). The public profile route is /@<username>, but reserving these keeps
+// share URLs unambiguous and prevents impersonation of system pages.
+export const RESERVED_USERNAMES = new Set([
+  "api",
+  "login",
+  "logout",
+  "signup",
+  "settings",
+  "cities",
+  "stats",
+  "visits",
+  "admin",
+  "about",
+  "pricing",
+  "help",
+  "support",
+  "terms",
+  "privacy",
+  "home",
+  "explore",
+  "discover",
+  "me",
+  "user",
+  "users",
+  "profile",
+  "_next",
+  "favicon",
+  "robots",
+  "sitemap",
+  "ranking",
+  "rankingplace",
+]);
+
 export const RATING_MIN = 0;
 export const RATING_MAX = 100;
 
@@ -65,6 +106,15 @@ export const CURRENCIES = [
 export const DISTANCE_UNITS = [
   { value: "km", label: "Kilometers" },
   { value: "mi", label: "Miles" },
+] as const;
+
+// District frequency — value matches the DistrictFrequency enum. `weight` orders
+// "how much time spent" for the most-visited aggregation (higher = more).
+export const DISTRICT_FREQUENCIES = [
+  { value: "PASSED_THROUGH", label: "Passed through", weight: 1 },
+  { value: "FEW_TIMES", label: "A few times", weight: 2 },
+  { value: "A_LOT", label: "A lot", weight: 3 },
+  { value: "BASED_HERE", label: "Based here", weight: 4 },
 ] as const;
 
 export const RATE_LIMITS = {

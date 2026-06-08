@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { apiSuccess, apiError, apiNotFound, apiValidationError, apiUnauthorized } from "@/lib/api-response";
@@ -43,6 +44,14 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     if (error instanceof ZodError) {
       return apiValidationError(error);
+    }
+    // P2002 = unique-constraint violation. The only user-settable unique field
+    // here is `username`, so surface a friendly 409 instead of a generic 500.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return apiError("That username is already taken", 409);
     }
     console.error("PATCH /api/user error:", error);
     return apiError("Failed to update user");
