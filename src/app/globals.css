@@ -1,33 +1,46 @@
 @import "tailwindcss";
 
-/* Light theme (default root values) */
+/* "Atlas" brand — nature palette: earth canvas, sky-blue brand, sage success,
+   terracotta accent. Dark is the app default (set on <html> in layout.tsx); these
+   light values apply when a user switches theme in settings. */
+
+/* Light theme (warm paper) */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #2563eb;
+  --background: #faf6ef;
+  --foreground: #2b2117;
+  --card: #fffdf9;
+  --card-foreground: #2b2117;
+  --primary: #3e7e98;
   --primary-foreground: #ffffff;
-  --muted: #e2e8f0;
-  --muted-foreground: #64748b;
-  --border: #cbd5e1;
-  --accent: #f1f5f9;
-  --destructive: #dc2626;
+  --muted: #ece3d5;
+  --muted-foreground: #7a6e5c;
+  --border: #ddd2c0;
+  --accent: #f2eadd;
+  --destructive: #c0503f;
+  /* Brand accents — sage green = success/positive, terracotta = warm accent */
+  --leaf: #5e7e44;
+  --leaf-foreground: #ffffff;
+  --earth: #a9682f;
+  --earth-foreground: #ffffff;
 }
 
-/* Dark theme */
+/* Dark theme (espresso — default) */
 .dark {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --card: #1e293b;
-  --card-foreground: #e2e8f0;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --border: #334155;
-  --accent: #1e293b;
-  --destructive: #ef4444;
+  --background: #1c1814;
+  --foreground: #ede6da;
+  --card: #2a241d;
+  --card-foreground: #ede6da;
+  --primary: #5b9bb5;
+  --primary-foreground: #0c2129;
+  --muted: #3d352b;
+  --muted-foreground: #a89a87;
+  --border: #3d352b;
+  --accent: #332b22;
+  --destructive: #d9695c;
+  --leaf: #7a9b5e;
+  --leaf-foreground: #0e1a08;
+  --earth: #c08552;
+  --earth-foreground: #241608;
 }
 
 @theme inline {
@@ -42,6 +55,10 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-destructive: var(--destructive);
+  --color-leaf: var(--leaf);
+  --color-leaf-foreground: var(--leaf-foreground);
+  --color-earth: var(--earth);
+  --color-earth-foreground: var(--earth-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

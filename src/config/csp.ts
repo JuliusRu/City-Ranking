@@ -5,7 +5,8 @@ export function generateCSP(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' 'wasm-unsafe-eval' blob:`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org`,
-    `font-src 'self'`,
+    // Cesium inlines its widget/icon font as a data: URI, so allow data: fonts.
+    `font-src 'self' data:`,
     `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://nominatim.openstreetmap.org`,
     `worker-src 'self' blob:`,
     `child-src 'self' blob:`,
