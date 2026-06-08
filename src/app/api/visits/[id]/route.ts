@@ -11,6 +11,7 @@ import {
 } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { updateVisitSchema } from "@/lib/validators/visit";
+import { syncVisitDistricts } from "@/lib/districts";
 import { RATE_LIMITS } from "@/config/constants";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const visit = await prisma.visit.findFirst({
       where: { id, userId },
-      include: { city: true },
+      include: { city: true, districts: { include: { district: true } } },
     });
 
     if (!visit) return apiNotFound("Visit");
@@ -63,10 +64,19 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     });
     if (!existing) return apiNotFound("Visit");
 
-    const visit = await prisma.visit.update({
-      where: { id },
-      data: parsed.data,
-      include: { city: true },
+    // `districts` is a relation, not a column — pull it out of the scalar update
+    // payload and sync it separately. `undefined` = leave districts untouched.
+    const { districts, ...scalars } = parsed.data;
+
+    const visit = await prisma.$transaction(async (tx) => {
+      await tx.visit.update({ where: { id }, data: scalars });
+      if (districts !== undefined) {
+        await syncVisitDistricts(tx, existing.cityId, id, districts);
+      }
+      return tx.visit.findUniqueOrThrow({
+        where: { id },
+        include: { city: true, districts: { include: { district: true } } },
+      });
     });
 
     return apiSuccess(visit);

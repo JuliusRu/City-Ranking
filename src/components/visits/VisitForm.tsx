@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CitySearchInput } from "@/components/cities/CitySearchInput";
+import { DistrictPicker, type DistrictEntry } from "@/components/districts/DistrictPicker";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Rating } from "@/components/ui/Rating";
@@ -54,6 +55,16 @@ export function VisitForm({ visit }: VisitFormProps) {
   const [transport, setTransport] = useState(visit?.transport ?? "");
   const [wouldReturn, setWouldReturn] = useState(visit?.wouldReturn ?? null);
   const [highlights, setHighlights] = useState(visit?.highlights ?? "");
+  const [districts, setDistricts] = useState<DistrictEntry[]>(
+    visit?.districts?.map((d) => ({
+      name: d.district.name,
+      latitude: d.district.latitude,
+      longitude: d.district.longitude,
+      externalId: d.district.externalId,
+      rating: d.rating,
+      frequency: d.frequency,
+    })) ?? []
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -140,6 +151,16 @@ export function VisitForm({ visit }: VisitFormProps) {
         transport: transport || null,
         wouldReturn,
         highlights: highlights || null,
+        // Always sent (incl. empty) so edits persist removals — the API replaces
+        // the visit's full district set with this list.
+        districts: districts.map((d) => ({
+          name: d.name,
+          latitude: d.latitude,
+          longitude: d.longitude,
+          externalId: d.externalId ?? null,
+          rating: d.rating,
+          frequency: d.frequency,
+        })),
       };
 
       if (!isEditing) {
@@ -218,6 +239,16 @@ export function VisitForm({ visit }: VisitFormProps) {
         onChange={setRating}
         label="Rating"
         error={errors.rating}
+      />
+
+      <DistrictPicker
+        city={
+          selectedCity
+            ? { latitude: selectedCity.latitude, longitude: selectedCity.longitude }
+            : null
+        }
+        value={districts}
+        onChange={setDistricts}
       />
 
       <div className="grid grid-cols-2 gap-4">

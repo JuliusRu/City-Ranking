@@ -13,6 +13,16 @@ enum Visibility {
   PUBLIC
 }
 
+// How much of a visit was spent in a given district — kept SEPARATE from the
+// district rating so "where I actually was" and "how good it is" are independent
+// (you can be based in a mediocre area yet love one you barely saw).
+enum DistrictFrequency {
+  PASSED_THROUGH
+  FEW_TIMES
+  A_LOT
+  BASED_HERE
+}
+
 model User {
   id            String   @id @default(cuid())
   authId        String?  @unique @map("auth_id")
@@ -62,7 +72,8 @@ model City {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  visits Visit[]
+  visits    Visit[]
+  districts District[]
 
   @@unique([name, country, latitude, longitude])
   @@index([name])
@@ -88,8 +99,9 @@ model Visit {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      City            @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  districts VisitDistrict[]
 
   @@unique([userId, cityId, startDate])
   @@index([userId])
@@ -97,4 +109,44 @@ model Visit {
   @@index([startDate])
   @@index([rating])
   @@map("visits")
+}
+
+// A district/neighbourhood catalog entry, scoped to a city. Shared across users
+// and visits (geocoded via Nominatim) so we can later aggregate "best districts
+// in <city>" and drop sub-pins on the globe.
+model District {
+  id         String   @id @default(cuid())
+  cityId     String   @map("city_id")
+  name       String
+  latitude   Float
+  longitude  Float
+  externalId String?  @map("external_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  city           City            @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  visitDistricts VisitDistrict[]
+
+  @@unique([cityId, name])
+  @@index([cityId])
+  @@map("districts")
+}
+
+// Join: which districts a visit covered, each with its own rating (appeal) and
+// frequency (how much time spent) — the two independent dimensions.
+model VisitDistrict {
+  id         String            @id @default(cuid())
+  visitId    String            @map("visit_id")
+  districtId String            @map("district_id")
+  rating     Int               @db.SmallInt
+  frequency  DistrictFrequency @default(FEW_TIMES)
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  visit    Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  district District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  @@unique([visitId, districtId])
+  @@index([visitId])
+  @@index([districtId])
+  @@map("visit_districts")
 }

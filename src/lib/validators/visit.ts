@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { visitDistrictInputSchema } from "./district";
 
 export const createVisitSchema = z
   .object({
@@ -12,6 +13,7 @@ export const createVisitSchema = z
     wouldReturn: z.boolean().optional().nullable(),
     highlights: z.string().max(5000).optional().nullable(),
     transport: z.enum(["flew", "drove", "train", "bus", "cruise", "other"]).optional().nullable(),
+    districts: z.array(visitDistrictInputSchema).max(20).optional(),
   })
   .refine(
     (data) => !data.endDate || data.endDate >= data.startDate,
@@ -29,6 +31,8 @@ export const updateVisitSchema = z
     wouldReturn: z.boolean().optional().nullable(),
     highlights: z.string().max(5000).optional().nullable(),
     transport: z.enum(["flew", "drove", "train", "bus", "cruise", "other"]).optional().nullable(),
+    // When present, replaces the visit's full district set (omit to leave as-is).
+    districts: z.array(visitDistrictInputSchema).max(20).optional(),
   })
   .refine(
     (data) => {

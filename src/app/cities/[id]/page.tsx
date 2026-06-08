@@ -3,6 +3,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { DISTRICT_FREQUENCIES } from "@/config/constants";
+
+const FREQ_WEIGHT: Record<string, number> = Object.fromEntries(
+  DISTRICT_FREQUENCIES.map((f) => [f.value, f.weight])
+);
 
 function formatDateRange(startDate: Date, endDate: Date | null): string {
   const opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" };
@@ -34,6 +39,7 @@ export default async function CityDetailPage({
       visits: {
         where: { userId },
         orderBy: { startDate: "desc" },
+        include: { districts: { include: { district: true } } },
       },
     },
   });
@@ -41,6 +47,40 @@ export default async function CityDetailPage({
   if (!city || city.visits.length === 0) notFound();
 
   const visits = city.visits;
+
+  // Aggregate district experiences across all visits to this city. Two dimensions
+  // kept separate: avgRating (appeal) and weightSum (how much time spent overall),
+  // so "most visited" and "best rated" can differ — exactly the planning signal.
+  const districtMap = new Map<
+    string,
+    { name: string; ratingSum: number; count: number; weightSum: number; topWeight: number }
+  >();
+  for (const v of visits) {
+    for (const vd of v.districts) {
+      const agg = districtMap.get(vd.districtId) ?? {
+        name: vd.district.name,
+        ratingSum: 0,
+        count: 0,
+        weightSum: 0,
+        topWeight: 0,
+      };
+      const weight = FREQ_WEIGHT[vd.frequency] ?? 1;
+      agg.ratingSum += vd.rating;
+      agg.count += 1;
+      agg.weightSum += weight;
+      agg.topWeight = Math.max(agg.topWeight, weight);
+      districtMap.set(vd.districtId, agg);
+    }
+  }
+  const districts = Array.from(districtMap.values())
+    .map((d) => ({
+      name: d.name,
+      avgRating: Math.round(d.ratingSum / d.count),
+      topFrequencyLabel:
+        DISTRICT_FREQUENCIES.find((f) => f.weight === d.topWeight)?.label ?? "",
+      weightSum: d.weightSum,
+    }))
+    .sort((a, b) => b.weightSum - a.weightSum || b.avgRating - a.avgRating);
   const avgRating = Math.round(
     visits.reduce((sum, v) => sum + v.rating, 0) / visits.length
   );
@@ -93,6 +133,49 @@ export default async function CityDetailPage({
           <p className="text-xs text-muted-foreground">{totalDays === 1 ? "Day" : "Days"}</p>
         </div>
       </div>
+
+      {districts.length > 0 && (
+        <div className="mb-8">
+          <h2 className="mb-1 text-lg font-semibold text-foreground">
+            Neighbourhoods
+          </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Sorted by how much time you spent there — rating is how much you liked
+            each one.
+          </p>
+          <div className="space-y-2">
+            {districts.map((d, i) => (
+              <div
+                key={d.name}
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+              >
+                <div
+                  className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+                  style={{
+                    backgroundColor: `${ratingToColor(d.avgRating)}20`,
+                    color: ratingToColor(d.avgRating),
+                  }}
+                >
+                  {ratingToDisplay(d.avgRating)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {d.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {d.topFrequencyLabel}
+                  </p>
+                </div>
+                {i === 0 && (
+                  <span className="flex-shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    Most visited
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <h2 className="mb-4 text-lg font-semibold text-foreground">All Visits</h2>
       <div className="space-y-3">

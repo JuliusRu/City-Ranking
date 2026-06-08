@@ -10,6 +10,7 @@ import {
 } from "@/lib/api-response";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limiter";
 import { createVisitSchema, visitQuerySchema } from "@/lib/validators/visit";
+import { syncVisitDistricts } from "@/lib/districts";
 import { RATE_LIMITS } from "@/config/constants";
 
 export async function GET(request: NextRequest) {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     const [items, total] = await Promise.all([
       prisma.visit.findMany({
         where,
-        include: { city: true },
+        include: { city: true, districts: { include: { district: true } } },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
@@ -73,27 +74,37 @@ export async function POST(request: NextRequest) {
 
     const userId = await getCurrentUserId();
     if (!userId) return apiUnauthorized();
-    const { cityId, rating, comment, startDate, endDate, tripType, budgetLevel, wouldReturn, highlights, transport } = parsed.data;
+    const { cityId, rating, comment, startDate, endDate, tripType, budgetLevel, wouldReturn, highlights, transport, districts } = parsed.data;
 
     // Verify city exists
     const city = await prisma.city.findUnique({ where: { id: cityId } });
     if (!city) return apiError("City not found", 404);
 
-    const visit = await prisma.visit.create({
-      data: {
-        userId,
-        cityId,
-        rating,
-        comment,
-        startDate,
-        endDate: endDate ?? null,
-        tripType: tripType ?? null,
-        budgetLevel: budgetLevel ?? null,
-        wouldReturn: wouldReturn ?? null,
-        highlights: highlights ?? null,
-        transport: transport ?? null,
-      },
-      include: { city: true },
+    // Create the visit and its districts atomically so a failure mid-way can't
+    // leave a visit without (or with partial) district rows.
+    const visit = await prisma.$transaction(async (tx) => {
+      const created = await tx.visit.create({
+        data: {
+          userId,
+          cityId,
+          rating,
+          comment,
+          startDate,
+          endDate: endDate ?? null,
+          tripType: tripType ?? null,
+          budgetLevel: budgetLevel ?? null,
+          wouldReturn: wouldReturn ?? null,
+          highlights: highlights ?? null,
+          transport: transport ?? null,
+        },
+      });
+      if (districts && districts.length > 0) {
+        await syncVisitDistricts(tx, cityId, created.id, districts);
+      }
+      return tx.visit.findUniqueOrThrow({
+        where: { id: created.id },
+        include: { city: true, districts: { include: { district: true } } },
+      });
     });
 
     return apiSuccess(visit, 201);

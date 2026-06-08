@@ -39,6 +39,84 @@ Data API" aus). Verifiziert: `/rest/v1/*` → 503 (tot), `/auth/v1` → 200 (Log
 
 ---
 
+## 2026-06-08 — Stadtteile/Districts (Phase 1) + DevOps-Lektion Migrationen
+
+### Teil 18 — District-Feature (Stadtteile pro Besuch, je mit Rating + Häufigkeit)
+- **Warum:** In Großstädten sind Stadtteile „wie eigene Städte". Für „soll ich da hin/leben?"
+  zählt, **welches Viertel** gut ist. Kern-Einsicht: zwei **getrennte** Dimensionen pro Stadtteil
+  — `frequency` (wie viel man da war) ≠ `rating` (wie attraktiv). Man wohnt evtl. im mittelmäßigen
+  Viertel und liebt eins, das man kaum sah.
+- **Modell (Katalog-Variante gewählt):** neue Tabellen `districts` (cityId, name, lat, lng, osmId —
+  geocodet via Nominatim) + `visit_districts` (visitId, districtId, rating, frequency-Enum
+  PASSED_THROUGH/FEW_TIMES/A_LOT/BASED_HERE). Mehrere Districts pro Visit. Katalog (statt Freitext)
+  → später „beste Viertel in X" über alle Nutzer + Sub-Pins möglich (Phase 2).
+- **Gebaut:** `searchDistricts()` (Nominatim, viewbox um die Stadt + Filter auf suburb/neighbourhood),
+  Route `GET /api/districts/search?q&lat&lng`; Visit POST/PUT nehmen `districts[]` und upserten
+  Katalog + `visit_districts` **atomar in einer Transaktion** (`syncVisitDistricts`, Replace-Semantik);
+  `DistrictPicker`-UI im Visit-Formular (Suche → Zeilen mit Rating-Slider + Häufigkeits-Select);
+  **City-Detail-Seite**: „Neighbourhoods"-Sektion, sortiert nach Häufigkeit, „Most visited"-Badge.
+- **Status:** tsc + Lint + `next build` grün. Lokal Demo-Daten an Berlin-Visits geseedet
+  (Kreuzberg/Mitte/Neukölln). Geocoding-Route live getestet (200). **Nicht committet.**
+- **OFFEN Phase 2:** Globe-Sub-Pins, Community-Aggregation, globale Stats-Karte „häufigster Stadtteil".
+
+### Teil 19 — DevOps-Lektion: warum `migrate dev` hier bricht
+- `prisma migrate dev` nutzt eine **Shadow-DB** (Wegwerf-DB, in der ALLE Migrationen einmal durchgespielt
+  werden). Unsere RLS-Migration `20260605000000` macht `ALTER TABLE _prisma_migrations …` — diese
+  interne Tabelle existiert in der Shadow-DB nicht → P3006/P1014. Auf Prod lief sie nur, weil
+  `migrate deploy` **keine** Shadow-DB nutzt.
+- **Workaround (= unser Standard ab jetzt):** Migration mit `prisma migrate diff --from-url <lokal>
+  --to-schema-datamodel … --script` erzeugen (keine Shadow-DB), als `migration.sql` ablegen, mit
+  `migrate deploy` anwenden. Lokal: DATABASE_URL muss auf :5433 (`city_ranking`) **überschrieben**
+  werden, da die CLI sonst `.env` = **Prod** nimmt!
+- **PROD-MIGRATION NOCH AUSSTEHEND:** `20260608000000_add_districts` ist nur lokal angewandt. Vor
+  Prod-Nutzung des Features: `DATABASE_URL=<prod-pooler-IPv4-URL> npx prisma migrate deploy` (manuell,
+  da Coolify nicht auto-migriert). SQL ist rein additiv (CREATE TABLE/TYPE) → kein Bruch-Risiko für
+  bestehende Daten.
+
+---
+
+## 2026-06-06 — Öffentliches Profil (#7) gebaut + „Atlas"-Branding festgelegt
+
+### Teil 16 — `@username`-Profile + Teilen (viraler Loop, #7)
+- **Warum:** B2C-Wachstum hängt am Teilen-Loop — ein hübscher 3D-Globe ist nur dann ein
+  Akquise-Kanal, wenn man ihn öffentlich herzeigen kann. Kern des Pivots „single-player + sharing".
+- **Datenmodell war schon da:** Migration `20260528120000_add_auth_profile_visibility` hatte
+  `users.username/bio/public_profile` (+ unique/index) und `visits.visibility` (Enum
+  PRIVATE/FRIENDS/PUBLIC) bereits angelegt → **kein neuer DB-Migrationsschritt nötig**, nur App-Schicht.
+- **URL-Form:** `ranking.place/@julius`. Next reserviert `@`-Ordner für Parallel Routes, daher
+  Route als `app/[handle]/page.tsx` + `@`-Präfix-Match im Code; alles ohne `@` → `notFound()`.
+  Statische Routen (/login, /settings…) gewinnen gegen das dynamische Segment → keine Kollision.
+- **Gebaut:** (1) Settings-UI zum Username-Beanspruchen + Bio + Public-Toggle + Live-Share-Link,
+  PATCH `/api/user` erweitert (Username-Regex + Reserved-Liste, P2002→„taken"-409). (2) Geteilte
+  Server-Fn `lib/profile.ts:getPublicProfile()` (React `cache()`, strikte Feld-Whitelist — **nie**
+  Email/authId, nur PUBLIC-Visits) — **bewusst KEINE separate öffentliche API-Route** (weniger
+  Angriffsfläche; Seite braucht Daten eh server-seitig für SSR+OG). (3) `app/[handle]/page.tsx`
+  rendert read-only Globe (neue `GlobeStage`-Komponente aus `GlobeWrapper` extrahiert, `readOnly`
+  blendet Edit/Add aus) + Profil-Header. (4) `opengraph-image.tsx` (dynamische OG-Karte via
+  `next/og` ImageResponse — kein Cesium-Screenshot, da WebGL server-seitig nicht geht; CSP
+  irrelevant, weil Crawler server-zu-server holen).
+- **Status:** tsc + Lint + `next build` grün. `public_profile` default `false` → ändert für
+  bestehende Nutzer nichts. **Noch nicht committet/gepusht.**
+- **Sichtbarkeit ENTSCHIEDEN (2026-06-08): Variante A — profil-weit.** Ein genereller Toggle
+  (`public_profile`) entscheidet alles: ist er an, sind **alle** Visits/Listen öffentlich sichtbar;
+  ist er aus, ist die Seite offline (404). Kein Per-Visit-Schalter in v1. Umsetzung: `visibility`-Filter
+  in `getPublicProfile()` entfernt (zeigt jetzt alle Visits); Settings-Text angepasst. Die
+  `visits.visibility`-Spalte bleibt im Schema für ein späteres granulares/Friends-only-Modell.
+
+### Teil 17 — Corporate Identity „Atlas" (Naturfarben)
+- **Warum:** Branding vor weiterem Feature-Bau, damit der Globe „herzeigbar" wird.
+- **Gewählt:** Richtung „Atlas" — erdige, warme, premium Palette (altes Kartenwerk). Rollen klar
+  getrennt: **Himmelblau `#5B9BB5` = Primary/Marke**, **Salbeigrün `#7A9B5E` = Erfolg**,
+  **Terrakotta `#C08552` = warmer Akzent**, Espressobraun = Leinwand. (Zwischenzeitlich kurz
+  „Horizon" gewählt, dann auf Atlas umgeschwenkt.)
+- **Umgesetzt:** Alle Tokens in `globals.css` neu belegt (Dark = Default + Light), zwei neue Tokens
+  `--leaf`/`--earth` (+ `@theme inline` → `bg-leaf`/`text-earth` in Tailwind). OG-Bild farblich
+  nachgezogen. Rein kosmetisch, über Tokens → wirkt automatisch app-weit. **Noch nicht committet.**
+- **Scratch:** `branding-preview.html` im Repo-Root war das Abstimmungs-Board (3 Richtungen, dann
+  Atlas-Sheet) — kann gelöscht werden, nicht committen.
+
+---
+
 ## 2026-06-05 — Supabase-Security-Advisor: RLS-Fix auf `_prisma_migrations`
 
 ### Teil 15 — „rls_disabled_in_public" untersucht & behoben
