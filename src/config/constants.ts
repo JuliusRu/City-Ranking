@@ -108,6 +108,16 @@ export const DISTANCE_UNITS = [
   { value: "mi", label: "Miles" },
 ] as const;
 
+// Venue types — value matches the VenueType enum.
+export const VENUE_TYPES = [
+  { value: "RESTAURANT", label: "Restaurant" },
+  { value: "CAFE", label: "Café" },
+  { value: "BAR", label: "Bar" },
+  { value: "BAKERY", label: "Bakery" },
+  { value: "CLUB", label: "Club" },
+  { value: "OTHER", label: "Other" },
+] as const;
+
 // District frequency — value matches the DistrictFrequency enum. `weight` orders
 // "how much time spent" for the most-visited aggregation (higher = more).
 export const DISTRICT_FREQUENCIES = [

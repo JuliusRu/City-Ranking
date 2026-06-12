@@ -10,6 +10,7 @@ const navItems = [
   { href: "/", label: "Globe" },
   { href: "/visits", label: "Visits" },
   { href: "/cities", label: "Cities" },
+  { href: "/places", label: "Places" },
   { href: "/stats", label: "Stats" },
   { href: "/visits/new", label: "Add Visit" },
 ];

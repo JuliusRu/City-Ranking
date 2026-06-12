@@ -73,6 +73,19 @@ Data API" aus). Verifiziert: `/rest/v1/*` → 503 (tot), `/auth/v1` → 200 (Log
   da Coolify nicht auto-migriert). SQL ist rein additiv (CREATE TABLE/TYPE) → kein Bruch-Risiko für
   bestehende Daten.
 
+### Teil 20 — Neue Kategorie „Places" (Restaurants/Cafés/Bars), eigenständig
+- **Warum:** Lokale-Empfehlungen sind der „wo soll ich hin/essen"-Hebel. Julius wollte explizit eine
+  **eigenständige Kategorie, NICHT an Stadt/Trip gekoppelt** — eine persönliche Food-&-Drink-Liste.
+- **Modell:** `venues` (userId, name, `type`-Enum RESTAURANT/CAFE/BAR/BAKERY/CLUB/OTHER, rating,
+  location-Freitext, priceLevel, note, wouldReturn, lat/lng optional für späteren Globe). Direkt am
+  User, kein City/Visit-Bezug. Migration `20260608010000_add_venues`.
+- **Gebaut:** Validatoren; REST-API `/api/venues` (+`[id]`) GET/POST/PUT/DELETE, user-scoped;
+  `useVenues`-Hook; neuer Nav-Punkt **„Places"**; `/places` (Liste mit Typ-Filter-Chips + Karten +
+  Löschen), `/places/new` + `/places/[id]` mit `VenueForm`. Middleware-Gating um `/places` erweitert.
+- **Status:** tsc + Lint + `next build` grün, Gating/401 verifiziert. 3 Demo-Lokale lokal geseedet
+  (Lissabon). **Nicht committet.** Prod-Migration `20260608010000_add_venues` noch ausstehend
+  (additiv, gleicher manueller `migrate deploy`-Schritt wie districts).
+
 ---
 
 ## 2026-06-06 — Öffentliches Profil (#7) gebaut + „Atlas"-Branding festgelegt

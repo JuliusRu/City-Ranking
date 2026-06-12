@@ -101,6 +101,29 @@ export interface GlobeMarker {
   comment: string | null;
 }
 
+export type VenueType =
+  | "RESTAURANT"
+  | "CAFE"
+  | "BAR"
+  | "BAKERY"
+  | "CLUB"
+  | "OTHER";
+
+export interface VenueData {
+  id: string;
+  name: string;
+  type: VenueType;
+  rating: number;
+  location: string | null;
+  priceLevel: string | null;
+  note: string | null;
+  wouldReturn: boolean | null;
+  latitude: number | null;
+  longitude: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CityOverview {
   id: string;
   name: string;

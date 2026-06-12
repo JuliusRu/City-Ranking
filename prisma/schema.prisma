@@ -23,6 +23,15 @@ enum DistrictFrequency {
   BASED_HERE
 }
 
+enum VenueType {
+  RESTAURANT
+  CAFE
+  BAR
+  BAKERY
+  CLUB
+  OTHER
+}
+
 model User {
   id            String   @id @default(cuid())
   authId        String?  @unique @map("auth_id")
@@ -37,6 +46,7 @@ model User {
 
   visits   Visit[]
   settings UserSettings?
+  venues   Venue[]
 
   @@index([username])
   @@map("users")
@@ -149,4 +159,29 @@ model VisitDistrict {
   @@index([visitId])
   @@index([districtId])
   @@map("visit_districts")
+}
+
+// A standalone place the user rates — restaurant / café / bar / etc. Deliberately
+// NOT tied to a City or Visit: it's its own category (your personal food & drink
+// list). `location` is free text; coordinates are optional for a future map view.
+model Venue {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  name        String
+  type        VenueType @default(RESTAURANT)
+  rating      Int       @db.SmallInt
+  location    String?
+  priceLevel  String?   @map("price_level")
+  note        String?   @db.Text
+  wouldReturn Boolean?  @map("would_return")
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("venues")
 }
