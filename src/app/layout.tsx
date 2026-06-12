@@ -32,7 +32,11 @@ export default async function RootLayout({
   await headers();
 
   return (
-    <html lang="en" className="dark">
+    // suppressHydrationWarning: browser extensions (e.g. Scribe recorder) and
+    // theme scripts mutate <html> attributes before React hydrates, which would
+    // otherwise trigger a hydration-mismatch warning. This suppresses it for
+    // this element only — one level deep, not the whole tree.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
