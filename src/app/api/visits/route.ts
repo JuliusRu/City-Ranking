@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     const userId = await getCurrentUserId();
     if (!userId) return apiUnauthorized();
-    const { cityId, rating, comment, startDate, endDate, tripType, budgetLevel, wouldReturn, highlights, transport, districts } = parsed.data;
+    const { cityId, rating, comment, startDate, endDate, tripType, budgetLevel, wouldReturn, highlights, transport, photoUrl, districts } = parsed.data;
 
     // Verify city exists
     const city = await prisma.city.findUnique({ where: { id: cityId } });
@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
           wouldReturn: wouldReturn ?? null,
           highlights: highlights ?? null,
           transport: transport ?? null,
+          photoUrl: photoUrl ?? null,
         },
       });
       if (districts && districts.length > 0) {

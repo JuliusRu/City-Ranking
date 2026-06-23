@@ -17,6 +17,7 @@ export const createVenueSchema = z.object({
   priceLevel: z.enum(["budget", "moderate", "expensive", "luxury"]).optional().nullable(),
   note: z.string().max(5000).optional().nullable(),
   wouldReturn: z.boolean().optional().nullable(),
+  photoUrl: z.string().url().max(2000).optional().nullable(),
 });
 
 export const updateVenueSchema = createVenueSchema.partial();

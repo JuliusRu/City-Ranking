@@ -97,6 +97,7 @@ export async function getFeed({
       comment: true,
       startDate: true,
       endDate: true,
+      photoUrl: true,
       userId: true,
       city: { select: { id: true, name: true, country: true } },
       districts: { select: { district: { select: { name: true } } } },
@@ -124,6 +125,7 @@ export async function getFeed({
       comment: r.comment,
       startDate: r.startDate.toISOString(),
       endDate: r.endDate ? r.endDate.toISOString() : null,
+      photoUrl: r.photoUrl,
       city: { id: r.city.id, name: r.city.name, country: r.city.country },
       districts: r.districts.map((d) => d.district.name),
       author: {

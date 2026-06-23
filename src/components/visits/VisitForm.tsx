@@ -7,6 +7,7 @@ import { DistrictPicker, type DistrictEntry } from "@/components/districts/Distr
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Rating } from "@/components/ui/Rating";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
 import { TRIP_TYPES, BUDGET_LEVELS, TRANSPORT_METHODS } from "@/config/constants";
 import type { GeocodingResult } from "@/lib/geocoding";
@@ -55,6 +56,7 @@ export function VisitForm({ visit }: VisitFormProps) {
   const [transport, setTransport] = useState(visit?.transport ?? "");
   const [wouldReturn, setWouldReturn] = useState(visit?.wouldReturn ?? null);
   const [highlights, setHighlights] = useState(visit?.highlights ?? "");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(visit?.photoUrl ?? null);
   const [districts, setDistricts] = useState<DistrictEntry[]>(
     visit?.districts?.map((d) => ({
       name: d.district.name,
@@ -151,6 +153,7 @@ export function VisitForm({ visit }: VisitFormProps) {
         transport: transport || null,
         wouldReturn,
         highlights: highlights || null,
+        photoUrl,
         // Always sent (incl. empty) so edits persist removals — the API replaces
         // the visit's full district set with this list.
         districts: districts.map((d) => ({
@@ -382,6 +385,13 @@ export function VisitForm({ visit }: VisitFormProps) {
           {comment.length}/5000 characters
         </p>
       </div>
+
+      <ImageUpload
+        value={photoUrl}
+        onChange={setPhotoUrl}
+        folder="visits"
+        label="Photo (optional)"
+      />
 
       <div className="flex gap-3">
         <Button type="submit" disabled={isSubmitting}>

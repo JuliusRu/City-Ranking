@@ -90,15 +90,24 @@ export function VenueList() {
           {venues.map((v) => (
             <div key={v.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-3">
-                <div
-                  className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-                  style={{
-                    backgroundColor: `${ratingToColor(v.rating)}20`,
-                    color: ratingToColor(v.rating),
-                  }}
-                >
-                  {ratingToDisplay(v.rating)}
-                </div>
+                {v.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={v.photoUrl}
+                    alt={v.name}
+                    className="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+                    style={{
+                      backgroundColor: `${ratingToColor(v.rating)}20`,
+                      color: ratingToColor(v.rating),
+                    }}
+                  >
+                    {ratingToDisplay(v.rating)}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-foreground">{v.name}</p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Rating } from "@/components/ui/Rating";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
 import { VENUE_TYPES, BUDGET_LEVELS } from "@/config/constants";
 import type { VenueData, VenueType } from "@/types";
@@ -25,6 +26,7 @@ export function VenueForm({ venue }: VenueFormProps) {
   const [priceLevel, setPriceLevel] = useState(venue?.priceLevel ?? "");
   const [note, setNote] = useState(venue?.note ?? "");
   const [wouldReturn, setWouldReturn] = useState(venue?.wouldReturn ?? null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(venue?.photoUrl ?? null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,6 +54,7 @@ export function VenueForm({ venue }: VenueFormProps) {
           priceLevel: priceLevel || null,
           note: note.trim() || null,
           wouldReturn,
+          photoUrl,
         }),
       });
       const data = await res.json();
@@ -130,6 +133,13 @@ export function VenueForm({ venue }: VenueFormProps) {
       </div>
 
       <Rating value={rating} onChange={setRating} label="Rating" error={errors.rating} />
+
+      <ImageUpload
+        value={photoUrl}
+        onChange={setPhotoUrl}
+        folder="venues"
+        label="Photo (optional)"
+      />
 
       <Input
         id="location"

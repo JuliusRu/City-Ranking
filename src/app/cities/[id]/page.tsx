@@ -315,6 +315,14 @@ export default async function CityDetailPage({
                   Highlights: {visit.highlights}
                 </p>
               )}
+              {visit.photoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={visit.photoUrl}
+                  alt={`${city.name} photo`}
+                  className="mt-3 max-h-80 w-full rounded-lg object-cover"
+                />
+              )}
             </div>
           );
         })}

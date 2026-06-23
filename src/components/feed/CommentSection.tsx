@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useComments } from "@/hooks/useComments";
 import { useToast } from "@/components/ui/Toast";
+import { Avatar } from "@/components/ui/Avatar";
 import { timeAgo } from "@/lib/timeago";
 
 // Lazy comment thread under a feed card. Mounted only when the user opens it, so
@@ -94,16 +95,15 @@ export function CommentSection({
         <ul className="mt-3 space-y-3">
           {comments.map((c) => {
             const display = c.author.name ?? `@${c.author.username}`;
-            const initial = (c.author.name ?? c.author.username)
-              .charAt(0)
-              .toUpperCase();
             return (
               <li key={c.id} className="flex gap-2.5">
-                <Link
-                  href={`/@${c.author.username}`}
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
-                >
-                  {initial}
+                <Link href={`/@${c.author.username}`} className="flex-shrink-0">
+                  <Avatar
+                    src={c.author.avatarUrl}
+                    name={display}
+                    size={32}
+                    className="text-xs"
+                  />
                 </Link>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">

@@ -7,13 +7,11 @@ import { timeAgo } from "@/lib/timeago";
 import { LikeButton } from "./LikeButton";
 import { FollowButton } from "./FollowButton";
 import { CommentSection } from "./CommentSection";
+import { Avatar } from "@/components/ui/Avatar";
 import type { FeedItem } from "@/types";
 
 export function FeedCard({ item }: { item: FeedItem }) {
   const displayName = item.author.name ?? `@${item.author.username}`;
-  const initial = (item.author.name ?? item.author.username)
-    .charAt(0)
-    .toUpperCase();
 
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(item.commentCount);
@@ -24,9 +22,9 @@ export function FeedCard({ item }: { item: FeedItem }) {
       <div className="flex items-center gap-3">
         <Link
           href={`/@${item.author.username}`}
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
+          className="flex-shrink-0 transition-opacity hover:opacity-80"
         >
-          {initial}
+          <Avatar src={item.author.avatarUrl} name={displayName} size={40} />
         </Link>
         <div className="min-w-0 flex-1">
           <Link
@@ -82,6 +80,15 @@ export function FeedCard({ item }: { item: FeedItem }) {
           )}
         </div>
       </div>
+
+      {item.photoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={item.photoUrl}
+          alt={`${item.city.name} photo`}
+          className="mt-3 max-h-96 w-full rounded-xl object-cover"
+        />
+      )}
 
       {/* Footer: like + comment toggle */}
       <div className="mt-3 flex items-center gap-1 border-t border-border pt-2">

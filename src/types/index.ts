@@ -53,6 +53,7 @@ export interface VisitData {
   wouldReturn: boolean | null;
   highlights: string | null;
   transport: string | null;
+  photoUrl: string | null;
   userId: string;
   cityId: string;
   createdAt: string;
@@ -118,6 +119,7 @@ export interface VenueData {
   priceLevel: string | null;
   note: string | null;
   wouldReturn: boolean | null;
+  photoUrl: string | null;
   latitude: number | null;
   longitude: number | null;
   createdAt: string;
@@ -170,6 +172,7 @@ export interface FeedItem {
   comment: string | null;
   startDate: string;
   endDate: string | null;
+  photoUrl: string | null;
   city: { id: string; name: string; country: string };
   districts: string[]; // district names covered on this visit
   author: FeedAuthor;

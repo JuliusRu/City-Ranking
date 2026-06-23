@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "@/components/ui/Avatar";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -44,8 +45,6 @@ export function Header() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  const initial = user?.name?.charAt(0).toUpperCase() ?? "U";
 
   async function handleSignOut() {
     await createClient().auth.signOut();
@@ -138,11 +137,11 @@ export function Header() {
               <div className="relative ml-2" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-80"
+                  className="flex items-center rounded-full text-sm transition-opacity hover:opacity-80"
                   aria-label="User menu"
                   aria-expanded={dropdownOpen}
                 >
-                  {initial}
+                  <Avatar src={user.avatarUrl} name={user.name} size={36} />
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border bg-card py-1 shadow-lg">

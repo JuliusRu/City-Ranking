@@ -6,6 +6,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { PublicGlobe } from "@/components/globe/PublicGlobe";
 import { CopyLinkButton } from "@/components/profile/CopyLinkButton";
 import { FollowButton } from "@/components/feed/FollowButton";
+import { Avatar } from "@/components/ui/Avatar";
 import { SITE_URL } from "@/config/constants";
 
 // Resolve the viewer's relationship to this profile: are they the owner, and (if
@@ -90,7 +91,6 @@ export default async function ProfilePage({
 
   const followState = await getFollowState(username);
   const displayName = profile.name ?? `@${profile.username}`;
-  const initial = (profile.name ?? profile.username).charAt(0).toUpperCase();
   const shareUrl = `${SITE_URL}/@${profile.username}`;
 
   return (
@@ -102,9 +102,12 @@ export default async function ProfilePage({
       <div className="pointer-events-none absolute left-1/2 top-3 z-20 w-[calc(100vw-1rem)] max-w-md -translate-x-1/2 sm:top-4">
         <div className="pointer-events-auto rounded-2xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-              {initial}
-            </div>
+            <Avatar
+              src={profile.avatarUrl}
+              name={displayName}
+              size={48}
+              className="text-lg"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold text-foreground">
                 {displayName}

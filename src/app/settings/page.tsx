@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/Toast";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 import {
   THEMES,
   DATE_FORMATS,
@@ -71,6 +72,7 @@ export default function SettingsPage() {
   // Profile form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
 
   // Public profile form state
@@ -96,6 +98,7 @@ export default function SettingsPage() {
     if (user) {
       setName(user.name ?? "");
       setEmail(user.email ?? "");
+      setAvatarUrl(user.avatarUrl ?? null);
       setUsername(user.username ?? "");
       setBio(user.bio ?? "");
       setPublicProfile(user.publicProfile ?? false);
@@ -130,7 +133,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, avatarUrl }),
       });
       const json = await res.json();
       if (json.success) {
@@ -233,6 +236,13 @@ export default function SettingsPage() {
       <Card>
         <h2 className="mb-4 text-lg font-semibold">Profile</h2>
         <div className="space-y-4">
+          <ImageUpload
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            folder="avatars"
+            label="Profile picture"
+            shape="circle"
+          />
           <Input
             id="name"
             label="Name"

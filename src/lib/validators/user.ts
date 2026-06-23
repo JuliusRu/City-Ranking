@@ -22,6 +22,7 @@ export const updateUserSchema = z.object({
   username: usernameSchema.optional(),
   bio: z.string().max(280).nullable().optional(),
   publicProfile: z.boolean().optional(),
+  avatarUrl: z.string().url().max(2000).nullable().optional(),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
