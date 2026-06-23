@@ -48,6 +48,12 @@ model User {
   settings UserSettings?
   venues   Venue[]
 
+  // Social graph. `following` = edges where this user is the follower (people
+  // they follow); `followers` = edges where they are the followee.
+  following Follow[]    @relation("follower")
+  followers Follow[]    @relation("following")
+  likes     VisitLike[]
+
   @@index([username])
   @@map("users")
 }
@@ -112,6 +118,7 @@ model Visit {
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   city      City            @relation(fields: [cityId], references: [id], onDelete: Cascade)
   districts VisitDistrict[]
+  likes     VisitLike[]
 
   @@unique([userId, cityId, startDate])
   @@index([userId])
@@ -184,4 +191,37 @@ model Venue {
   @@index([userId])
   @@index([type])
   @@map("venues")
+}
+
+// Directed follow edge: `follower` follows `following`. One row per pair. Powers
+// the "Following" tab of the feed. Both sides cascade-delete with the user.
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+// A like/reaction on a shared visit. One per (user, visit) — the unique key makes
+// the toggle idempotent. Cascade-deletes with either the liker or the visit.
+model VisitLike {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  visitId   String   @map("visit_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, visitId])
+  @@index([visitId])
+  @@map("visit_likes")
 }
