@@ -18,11 +18,15 @@ export const getPublicProfile = cache(
       where: { username: handle },
       // Explicit select = trust boundary: no email/authId can slip out.
       select: {
+        id: true, // used only internally below (likes-received count), never returned
         username: true,
         name: true,
         bio: true,
         avatarUrl: true,
         publicProfile: true,
+        // followers = edges where this user is followed; following = edges where
+        // they are the follower (named via the Follow relation names).
+        _count: { select: { followers: true, following: true } },
         // Profile-wide visibility model: the single `publicProfile` toggle is the
         // switch. When on, ALL of the user's visits show — no per-visit filter.
         // (The visits.visibility column is kept in the schema for a future
@@ -49,6 +53,12 @@ export const getPublicProfile = cache(
     });
 
     if (!user || !user.publicProfile || !user.username) return null;
+
+    // Total likes this user has received across all their shared visits. Counted
+    // separately because it spans the visit→like join, not a direct user count.
+    const likesReceived = await prisma.visitLike.count({
+      where: { visit: { userId: user.id } },
+    });
 
     // Deduplicate by city, keeping the highest-rated visit — mirrors the authed
     // globe in GlobeWrapper so a profile looks identical to the owner's own view.
@@ -80,6 +90,11 @@ export const getPublicProfile = cache(
       avatarUrl: user.avatarUrl,
       markers,
       stats: { cities: markers.length, countries: countries.size },
+      social: {
+        followers: user._count.followers,
+        following: user._count.following,
+        likes: likesReceived,
+      },
     };
   }
 );

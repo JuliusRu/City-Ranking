@@ -48,6 +48,31 @@ export default async function CityDetailPage({
 
   const visits = city.visits;
 
+  // Cross-discovery: other public users who rated this same city. Ordered by
+  // rating desc, then deduped to one row per user (their best rating) — turns a
+  // city page into a way to find like-minded travellers. Trust boundary: only
+  // public-safe author fields are selected.
+  const otherCityVisits = await prisma.visit.findMany({
+    where: { cityId: id, userId: { not: userId }, user: { publicProfile: true } },
+    orderBy: { rating: "desc" },
+    select: {
+      rating: true,
+      user: { select: { username: true, name: true, avatarUrl: true } },
+    },
+  });
+  const seenRaters = new Set<string>();
+  const otherRaters: { username: string; name: string | null; rating: number }[] =
+    [];
+  for (const v of otherCityVisits) {
+    if (!v.user.username || seenRaters.has(v.user.username)) continue;
+    seenRaters.add(v.user.username);
+    otherRaters.push({
+      username: v.user.username,
+      name: v.user.name,
+      rating: v.rating,
+    });
+  }
+
   // Aggregate district experiences across all visits to this city. Two dimensions
   // kept separate: avgRating (appeal) and weightSum (how much time spent overall),
   // so "most visited" and "best rated" can differ — exactly the planning signal.
@@ -173,6 +198,51 @@ export default async function CityDetailPage({
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {otherRaters.length > 0 && (
+        <div className="mb-8">
+          <h2 className="mb-1 text-lg font-semibold text-foreground">
+            Who else has been here
+          </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Other travellers who rated {city.name} — tap to see their globe.
+          </p>
+          <div className="space-y-2">
+            {otherRaters.map((r) => {
+              const display = r.name ?? `@${r.username}`;
+              const initial = (r.name ?? r.username).charAt(0).toUpperCase();
+              return (
+                <Link
+                  key={r.username}
+                  href={`/@${r.username}`}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-accent"
+                >
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    {initial}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {display}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      @{r.username}
+                    </p>
+                  </div>
+                  <div
+                    className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+                    style={{
+                      backgroundColor: `${ratingToColor(r.rating)}20`,
+                      color: ratingToColor(r.rating),
+                    }}
+                  >
+                    {ratingToDisplay(r.rating)}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

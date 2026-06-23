@@ -130,7 +130,7 @@ export default async function ProfilePage({
             </p>
           )}
 
-          <div className="mt-3 flex gap-4 text-sm">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span className="text-foreground">
               <span className="font-semibold">{profile.stats.cities}</span>{" "}
               <span className="text-muted-foreground">cities</span>
@@ -138,6 +138,22 @@ export default async function ProfilePage({
             <span className="text-foreground">
               <span className="font-semibold">{profile.stats.countries}</span>{" "}
               <span className="text-muted-foreground">countries</span>
+            </span>
+            <span className="text-foreground">
+              <span className="font-semibold">{profile.social.followers}</span>{" "}
+              <span className="text-muted-foreground">
+                {profile.social.followers === 1 ? "follower" : "followers"}
+              </span>
+            </span>
+            <span className="text-foreground">
+              <span className="font-semibold">{profile.social.following}</span>{" "}
+              <span className="text-muted-foreground">following</span>
+            </span>
+            <span className="text-foreground">
+              <span className="font-semibold">{profile.social.likes}</span>{" "}
+              <span className="text-muted-foreground">
+                {profile.social.likes === 1 ? "like" : "likes"}
+              </span>
             </span>
           </div>
         </div>

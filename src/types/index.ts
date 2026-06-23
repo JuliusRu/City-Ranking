@@ -152,6 +152,7 @@ export interface PublicProfile {
   avatarUrl: string | null;
   markers: GlobeMarker[];
   stats: { cities: number; countries: number };
+  social: { followers: number; following: number; likes: number };
 }
 
 // Public-safe author shape embedded in feed items — no email/authId.
@@ -174,8 +175,18 @@ export interface FeedItem {
   author: FeedAuthor;
   likeCount: number;
   likedByViewer: boolean;
+  commentCount: number;
   followedByViewer: boolean; // does the viewer follow this author
   isOwn: boolean; // the viewer authored this
+}
+
+// A comment on a shared visit, as returned to the client.
+export interface CommentData {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: FeedAuthor;
+  isOwn: boolean; // the viewer wrote it (controls the delete affordance)
 }
 
 export type FeedScope = "global" | "following";
