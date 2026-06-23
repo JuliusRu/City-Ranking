@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
   // away from the login page. APIs handle their own 401, and "/" renders the
   // public landing when logged out, so neither is gated here.
   const path = request.nextUrl.pathname;
-  const protectedPrefixes = ["/cities", "/stats", "/visits", "/settings", "/places"];
+  const protectedPrefixes = ["/cities", "/stats", "/visits", "/settings", "/places", "/feed"];
   const isProtected = protectedPrefixes.some(
     (p) => path === p || path.startsWith(p + "/")
   );

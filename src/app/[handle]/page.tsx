@@ -1,9 +1,38 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicProfile } from "@/lib/profile";
+import { prisma } from "@/lib/db";
+import { getCurrentUserId } from "@/lib/auth";
 import { PublicGlobe } from "@/components/globe/PublicGlobe";
 import { CopyLinkButton } from "@/components/profile/CopyLinkButton";
+import { FollowButton } from "@/components/feed/FollowButton";
 import { SITE_URL } from "@/config/constants";
+
+// Resolve the viewer's relationship to this profile: are they the owner, and (if
+// not) do they already follow? Returns null for logged-out viewers so the page
+// shows no follow control. Kept out of getPublicProfile so that function stays a
+// pure public-data trust boundary.
+async function getFollowState(
+  username: string
+): Promise<{ isOwn: boolean; following: boolean } | null> {
+  const viewerId = await getCurrentUserId();
+  if (!viewerId) return null;
+
+  const target = await prisma.user.findUnique({
+    where: { username },
+    select: { id: true },
+  });
+  if (!target) return null;
+  if (target.id === viewerId) return { isOwn: true, following: false };
+
+  const edge = await prisma.follow.findUnique({
+    where: {
+      followerId_followingId: { followerId: viewerId, followingId: target.id },
+    },
+    select: { id: true },
+  });
+  return { isOwn: false, following: Boolean(edge) };
+}
 
 // Next reserves folder names beginning with @ for parallel-route slots, so the
 // /@handle URL can't be a literal folder. Instead this root dynamic segment
@@ -59,6 +88,7 @@ export default async function ProfilePage({
   const profile = await getPublicProfile(username);
   if (!profile) notFound();
 
+  const followState = await getFollowState(username);
   const displayName = profile.name ?? `@${profile.username}`;
   const initial = (profile.name ?? profile.username).charAt(0).toUpperCase();
   const shareUrl = `${SITE_URL}/@${profile.username}`;
@@ -83,7 +113,15 @@ export default async function ProfilePage({
                 @{profile.username}
               </p>
             </div>
-            <CopyLinkButton url={shareUrl} />
+            <div className="flex flex-shrink-0 items-center gap-2">
+              {followState && !followState.isOwn && (
+                <FollowButton
+                  username={profile.username}
+                  initialFollowing={followState.following}
+                />
+              )}
+              <CopyLinkButton url={shareUrl} />
+            </div>
           </div>
 
           {profile.bio && (

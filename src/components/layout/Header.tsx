@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/", label: "Globe" },
+  { href: "/feed", label: "Feed" },
   { href: "/visits", label: "Visits" },
   { href: "/cities", label: "Cities" },
   { href: "/places", label: "Places" },

@@ -523,17 +523,40 @@ const personas: Persona[] = [
   },
 ];
 
+// Follow graph: [follower, followee] handles. "julius" is included so YOUR
+// "Following" tab has content; missing julius is handled gracefully below.
+const FOLLOW_EDGES: [string, string][] = [
+  ["julius", "maya"],
+  ["julius", "sofia"],
+  ["julius", "tomf"],
+  ["maya", "sofia"],
+  ["maya", "leon"],
+  ["sofia", "maya"],
+  ["sofia", "tomf"],
+  ["leon", "maya"],
+  ["leon", "jordan"],
+  ["jordan", "sofia"],
+  ["jordan", "maya"],
+  ["tomf", "leon"],
+  ["tomf", "julius"],
+  ["maya", "julius"],
+];
+
 // ── seeding ──────────────────────────────────────────────────────────────
 async function main() {
   const usernames = personas.map((p) => p.username);
 
   // Wipe ONLY the test users (cascade removes their visits, visit_districts,
-  // venues, settings). Your own account and shared cities/districts survive.
+  // venues, settings, follows and likes). Your own account and shared
+  // cities/districts survive. Follow/like rows that touch a deleted test user
+  // cascade away too, so re-running stays clean.
   const deleted = await prisma.user.deleteMany({
     where: { username: { in: usernames } },
   });
   if (deleted.count) console.log(`Removed ${deleted.count} existing test user(s)`);
 
+  // 1) Create the users first, so visits can be interleaved across them.
+  const userIdByHandle = new Map<string, string>();
   for (const p of personas) {
     const user = await prisma.user.create({
       data: {
@@ -554,51 +577,77 @@ async function main() {
         },
       },
     });
+    userIdByHandle.set(p.username, user.id);
+  }
 
-    let visitCount = 0;
-    let districtCount = 0;
+  // 2) Interleave visits round-robin across personas so the feed mixes authors
+  //    instead of showing one person's six ratings in a block.
+  const interleaved: { persona: Persona; visit: VisitSeed }[] = [];
+  const maxVisits = Math.max(...personas.map((p) => p.visits.length));
+  for (let i = 0; i < maxVisits; i++) {
+    for (const p of personas) {
+      if (p.visits[i]) interleaved.push({ persona: p, visit: p.visits[i] });
+    }
+  }
 
-    for (const v of p.visits) {
-      const city = await getOrCreateCity(v.city);
+  // Stagger createdAt back from ~1h ago, one step per visit, so "time ago" on
+  // the feed looks natural (newest first, spread over the last ~week).
+  const STEP_MIN = 270; // 4.5h between consecutive feed items
+  const base = Date.now() - 60 * 60 * 1000;
+  const createdVisits: { id: string; authorHandle: string }[] = [];
+  const perPersonaCount = new Map<string, { visits: number; districts: number }>();
 
-      const visit = await prisma.visit.create({
-        data: {
-          userId: user.id,
-          cityId: city.id,
-          rating: v.rating,
-          comment: v.comment,
-          startDate: d(v.startDate),
-          endDate: v.endDate ? d(v.endDate) : null,
-          tripType: v.tripType,
-          budgetLevel: v.budgetLevel,
-          wouldReturn: v.wouldReturn,
-          highlights: v.highlights,
-          transport: v.transport,
-          visibility: "PUBLIC",
-        },
-      });
-      visitCount++;
+  for (const [index, { persona, visit: v }] of interleaved.entries()) {
+    const userId = userIdByHandle.get(persona.username)!;
+    const city = await getOrCreateCity(v.city);
+    const createdAt = new Date(base - index * STEP_MIN * 60 * 1000);
 
-      if (v.districts?.length) {
-        for (const dist of v.districts) {
-          const district = await getOrCreateDistrict(city.id, dist.name, dist.lat, dist.lng);
-          await prisma.visitDistrict.create({
-            data: {
-              visitId: visit.id,
-              districtId: district.id,
-              rating: dist.rating,
-              frequency: dist.frequency,
-            },
-          });
-          districtCount++;
-        }
+    const visit = await prisma.visit.create({
+      data: {
+        userId,
+        cityId: city.id,
+        rating: v.rating,
+        comment: v.comment,
+        startDate: d(v.startDate),
+        endDate: v.endDate ? d(v.endDate) : null,
+        tripType: v.tripType,
+        budgetLevel: v.budgetLevel,
+        wouldReturn: v.wouldReturn,
+        highlights: v.highlights,
+        transport: v.transport,
+        visibility: "PUBLIC",
+        createdAt,
+      },
+    });
+    createdVisits.push({ id: visit.id, authorHandle: persona.username });
+
+    const counts = perPersonaCount.get(persona.username) ?? { visits: 0, districts: 0 };
+    counts.visits++;
+
+    if (v.districts?.length) {
+      for (const dist of v.districts) {
+        const district = await getOrCreateDistrict(city.id, dist.name, dist.lat, dist.lng);
+        await prisma.visitDistrict.create({
+          data: {
+            visitId: visit.id,
+            districtId: district.id,
+            rating: dist.rating,
+            frequency: dist.frequency,
+          },
+        });
+        counts.districts++;
       }
     }
+    perPersonaCount.set(persona.username, counts);
+  }
 
+  // 3) Venues (Places) per persona.
+  for (const p of personas) {
+    const userId = userIdByHandle.get(p.username)!;
     for (const ven of p.venues) {
       await prisma.venue.create({
         data: {
-          userId: user.id,
+          userId,
           name: ven.name,
           type: ven.type,
           rating: ven.rating,
@@ -609,14 +658,67 @@ async function main() {
         },
       });
     }
-
-    console.log(
-      `@${p.username.padEnd(8)} → ${visitCount} visits, ${districtCount} districts, ${p.venues.length} places`
-    );
   }
 
+  // Resolve YOUR account (username 'julius', else fall back to the seed email)
+  // so the social graph can include you. Optional — skipped if not present.
+  const julius =
+    (await prisma.user.findUnique({ where: { username: "julius" }, select: { id: true } })) ??
+    (await prisma.user.findUnique({
+      where: { email: "rummeljulius@gmail.com" },
+      select: { id: true },
+    }));
+  if (julius) userIdByHandle.set("julius", julius.id);
+
+  // 4) Follow graph.
+  let followCount = 0;
+  for (const [follower, followee] of FOLLOW_EDGES) {
+    const followerId = userIdByHandle.get(follower);
+    const followingId = userIdByHandle.get(followee);
+    if (!followerId || !followingId || followerId === followingId) continue;
+    await prisma.follow.upsert({
+      where: { followerId_followingId: { followerId, followingId } },
+      update: {},
+      create: { followerId, followingId },
+    });
+    followCount++;
+  }
+
+  // 5) Likes — a deterministic spread so counts look alive (0–5 per visit).
+  //    Pool = the five test users plus you (if present).
+  const likePool = [
+    ...personas.map((p) => ({ handle: p.username, id: userIdByHandle.get(p.username)! })),
+    ...(julius ? [{ handle: "julius", id: julius.id }] : []),
+  ];
+  let likeCount = 0;
+  for (const [i, cv] of createdVisits.entries()) {
+    const k = (i * 3 + 1) % 6; // 0..5 likers, varies per visit
+    const likers: string[] = [];
+    for (let j = 0; j < likePool.length && likers.length < k; j++) {
+      const cand = likePool[(i + j) % likePool.length];
+      if (cand.handle !== cv.authorHandle) likers.push(cand.id);
+    }
+    if (likers.length) {
+      await prisma.visitLike.createMany({
+        data: likers.map((userId) => ({ userId, visitId: cv.id })),
+        skipDuplicates: true,
+      });
+      likeCount += likers.length;
+    }
+  }
+
+  for (const p of personas) {
+    const c = perPersonaCount.get(p.username) ?? { visits: 0, districts: 0 };
+    console.log(
+      `@${p.username.padEnd(8)} → ${c.visits} visits, ${c.districts} districts, ${p.venues.length} places`
+    );
+  }
+  console.log(
+    `\nSocial graph: ${followCount} follows, ${likeCount} likes${julius ? " (incl. your account)" : " (julius account not found — skipped)"}`
+  );
   console.log("\n✅ Done. Public profiles:");
   for (const p of personas) console.log(`   /@${p.username}`);
+  console.log("   → and the feed at /feed");
 }
 
 main()
