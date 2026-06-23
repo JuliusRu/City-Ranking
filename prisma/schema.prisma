@@ -50,9 +50,10 @@ model User {
 
   // Social graph. `following` = edges where this user is the follower (people
   // they follow); `followers` = edges where they are the followee.
-  following Follow[]    @relation("follower")
-  followers Follow[]    @relation("following")
+  following Follow[]      @relation("follower")
+  followers Follow[]      @relation("following")
   likes     VisitLike[]
+  comments  VisitComment[]
 
   @@index([username])
   @@map("users")
@@ -119,6 +120,7 @@ model Visit {
   city      City            @relation(fields: [cityId], references: [id], onDelete: Cascade)
   districts VisitDistrict[]
   likes     VisitLike[]
+  comments  VisitComment[]
 
   @@unique([userId, cityId, startDate])
   @@index([userId])
@@ -224,4 +226,21 @@ model VisitLike {
   @@unique([userId, visitId])
   @@index([visitId])
   @@map("visit_likes")
+}
+
+// A comment on a shared visit. Many per visit, newest-first in the UI. Cascade-
+// deletes with either the author or the visit.
+model VisitComment {
+  id        String   @id @default(cuid())
+  visitId   String   @map("visit_id")
+  userId    String   @map("user_id")
+  body      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+  @@index([userId])
+  @@map("visit_comments")
 }

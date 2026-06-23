@@ -101,7 +101,7 @@ export async function getFeed({
       city: { select: { id: true, name: true, country: true } },
       districts: { select: { district: { select: { name: true } } } },
       user: { select: { username: true, name: true, avatarUrl: true } },
-      _count: { select: { likes: true } },
+      _count: { select: { likes: true, comments: true } },
       likes: viewerId
         ? { where: { userId: viewerId }, select: { id: true } }
         : false,
@@ -133,6 +133,7 @@ export async function getFeed({
       },
       likeCount: r._count.likes,
       likedByViewer: Array.isArray(r.likes) ? r.likes.length > 0 : false,
+      commentCount: r._count.comments,
       followedByViewer: followingSet.has(r.userId),
       isOwn: viewerId === r.userId,
     }));

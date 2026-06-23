@@ -707,6 +707,38 @@ async function main() {
     }
   }
 
+  // 6) Comments — a few per visit from non-author users, so threads aren't empty.
+  const COMMENT_TEXTS = [
+    "Totally agree with this!",
+    "Adding this to my list 🙌",
+    "How many days would you recommend?",
+    "Was it pricey when you went?",
+    "Still one of my favourites years later.",
+    "Underrated take, honestly.",
+    "Did it feel safe walking around at night?",
+    "The food scene there is unreal.",
+    "Need to go back — only had two days.",
+    "Best city on this whole app imo.",
+  ];
+  let commentCount = 0;
+  for (const [i, cv] of createdVisits.entries()) {
+    const n = (i * 2 + (i % 3)) % 4; // 0..3 comments
+    for (let j = 0; j < n; j++) {
+      const cand = likePool[(i + j + 1) % likePool.length];
+      if (cand.handle === cv.authorHandle) continue;
+      await prisma.visitComment.create({
+        data: {
+          visitId: cv.id,
+          userId: cand.id,
+          body: COMMENT_TEXTS[(i + j) % COMMENT_TEXTS.length],
+          // Comments land shortly after the visit was posted.
+          createdAt: new Date(base - i * STEP_MIN * 60 * 1000 + (j + 1) * 9 * 60 * 1000),
+        },
+      });
+      commentCount++;
+    }
+  }
+
   for (const p of personas) {
     const c = perPersonaCount.get(p.username) ?? { visits: 0, districts: 0 };
     console.log(
@@ -714,7 +746,7 @@ async function main() {
     );
   }
   console.log(
-    `\nSocial graph: ${followCount} follows, ${likeCount} likes${julius ? " (incl. your account)" : " (julius account not found — skipped)"}`
+    `\nSocial graph: ${followCount} follows, ${likeCount} likes, ${commentCount} comments${julius ? " (incl. your account)" : " (julius account not found — skipped)"}`
   );
   console.log("\n✅ Done. Public profiles:");
   for (const p of personas) console.log(`   /@${p.username}`);
