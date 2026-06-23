@@ -111,6 +111,7 @@ model Visit {
   wouldReturn Boolean?  @map("would_return")
   highlights  String?   @db.Text
   transport   String?
+  photoUrl    String?   @map("photo_url")
   userId      String    @map("user_id")
   cityId      String    @map("city_id")
   createdAt   DateTime  @default(now()) @map("created_at")
@@ -183,6 +184,7 @@ model Venue {
   priceLevel  String?   @map("price_level")
   note        String?   @db.Text
   wouldReturn Boolean?  @map("would_return")
+  photoUrl    String?   @map("photo_url")
   latitude    Float?
   longitude   Float?
   createdAt   DateTime  @default(now()) @map("created_at")
