@@ -154,6 +154,37 @@ export interface PublicProfile {
   stats: { cities: number; countries: number };
 }
 
+// Public-safe author shape embedded in feed items — no email/authId.
+export interface FeedAuthor {
+  username: string;
+  name: string | null;
+  avatarUrl: string | null;
+}
+
+// One shared city rating as it appears in the feed.
+export interface FeedItem {
+  id: string; // the visit id
+  createdAt: string;
+  rating: number;
+  comment: string | null;
+  startDate: string;
+  endDate: string | null;
+  city: { id: string; name: string; country: string };
+  districts: string[]; // district names covered on this visit
+  author: FeedAuthor;
+  likeCount: number;
+  likedByViewer: boolean;
+  followedByViewer: boolean; // does the viewer follow this author
+  isOwn: boolean; // the viewer authored this
+}
+
+export type FeedScope = "global" | "following";
+
+export interface FeedPage {
+  items: FeedItem[];
+  nextCursor: string | null;
+}
+
 export interface UserSettingsData {
   id: string;
   userId: string;
