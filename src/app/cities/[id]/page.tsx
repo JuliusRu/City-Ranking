@@ -44,9 +44,10 @@ export default async function CityDetailPage({
     },
   });
 
-  if (!city || city.visits.length === 0) notFound();
+  if (!city) notFound();
 
   const visits = city.visits;
+  const hasOwnVisits = visits.length > 0;
 
   // Cross-discovery: other public users who rated this same city. Ordered by
   // rating desc, then deduped to one row per user (their best rating) — turns a
@@ -72,6 +73,9 @@ export default async function CityDetailPage({
       rating: v.rating,
     });
   }
+
+  // Nothing to show if the viewer hasn't been here AND no public user has either.
+  if (!hasOwnVisits && otherRaters.length === 0) notFound();
 
   // Aggregate district experiences across all visits to this city. Two dimensions
   // kept separate: avgRating (appeal) and weightSum (how much time spent overall),
@@ -106,9 +110,9 @@ export default async function CityDetailPage({
       weightSum: d.weightSum,
     }))
     .sort((a, b) => b.weightSum - a.weightSum || b.avgRating - a.avgRating);
-  const avgRating = Math.round(
-    visits.reduce((sum, v) => sum + v.rating, 0) / visits.length
-  );
+  const avgRating = hasOwnVisits
+    ? Math.round(visits.reduce((sum, v) => sum + v.rating, 0) / visits.length)
+    : 0;
   const totalDays = visits.reduce((sum, v) => {
     if (!v.endDate) return sum + 1;
     const diff = Math.ceil(
@@ -136,28 +140,42 @@ export default async function CityDetailPage({
         </p>
       </div>
 
-      <div className="mb-8 flex gap-6 rounded-xl border border-border bg-card p-5">
-        <div className="text-center">
-          <div
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg text-xl font-bold"
-            style={{
-              backgroundColor: `${ratingToColor(avgRating)}20`,
-              color: ratingToColor(avgRating),
-            }}
-          >
-            {ratingToDisplay(avgRating)}
+      {hasOwnVisits ? (
+        <div className="mb-8 flex gap-6 rounded-xl border border-border bg-card p-5">
+          <div className="text-center">
+            <div
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg text-xl font-bold"
+              style={{
+                backgroundColor: `${ratingToColor(avgRating)}20`,
+                color: ratingToColor(avgRating),
+              }}
+            >
+              {ratingToDisplay(avgRating)}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Avg Rating</p>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Avg Rating</p>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-foreground">{visits.length}</p>
+            <p className="text-xs text-muted-foreground">{visits.length === 1 ? "Visit" : "Visits"}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-3xl font-bold text-foreground">{totalDays}</p>
+            <p className="text-xs text-muted-foreground">{totalDays === 1 ? "Day" : "Days"}</p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-3xl font-bold text-foreground">{visits.length}</p>
-          <p className="text-xs text-muted-foreground">{visits.length === 1 ? "Visit" : "Visits"}</p>
+      ) : (
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">
+            You haven&apos;t rated {city.name} yet.
+          </p>
+          <Link
+            href="/visits/new"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Add a visit
+          </Link>
         </div>
-        <div className="text-center">
-          <p className="text-3xl font-bold text-foreground">{totalDays}</p>
-          <p className="text-xs text-muted-foreground">{totalDays === 1 ? "Day" : "Days"}</p>
-        </div>
-      </div>
+      )}
 
       {districts.length > 0 && (
         <div className="mb-8">
@@ -247,8 +265,10 @@ export default async function CityDetailPage({
         </div>
       )}
 
-      <h2 className="mb-4 text-lg font-semibold text-foreground">All Visits</h2>
-      <div className="space-y-3">
+      {hasOwnVisits && (
+        <>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">All Visits</h2>
+          <div className="space-y-3">
         {visits.map((visit) => {
           const pills = [visit.tripType, visit.budgetLevel, visit.transport].filter(Boolean);
           return (
@@ -326,7 +346,9 @@ export default async function CityDetailPage({
             </div>
           );
         })}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

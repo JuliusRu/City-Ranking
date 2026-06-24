@@ -100,6 +100,23 @@ export function Header() {
                 })}
               </nav>
 
+              {/* Search — always visible */}
+              <Link
+                href="/search"
+                aria-label="Search"
+                aria-current={pathname.startsWith("/search") ? "page" : undefined}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                  pathname.startsWith("/search")
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </Link>
+
               {/* Hamburger — only below md */}
               <button
                 onClick={() => setMobileOpen((prev) => !prev)}

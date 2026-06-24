@@ -192,6 +192,25 @@ export interface CommentData {
   isOwn: boolean; // the viewer wrote it (controls the delete affordance)
 }
 
+export interface UserSearchResult {
+  username: string;
+  name: string | null;
+  avatarUrl: string | null;
+}
+
+export interface CitySearchResult {
+  id: string;
+  name: string;
+  country: string;
+  avgRating: number; // community average across public visits (0–100)
+  raters: number; // distinct public users who rated it
+}
+
+export interface SearchResults {
+  users: UserSearchResult[];
+  cities: CitySearchResult[];
+}
+
 export type FeedScope = "global" | "following";
 
 export interface FeedPage {
