@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
+import { Logo } from "@/components/layout/Logo";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -54,7 +55,11 @@ export function Header() {
   return (
     <header className="relative z-50 h-16 border-b border-border bg-card/80 backdrop-blur-sm">
       <div className="flex h-full items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-lg font-bold text-primary sm:text-xl">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-lg font-bold text-primary sm:text-xl"
+        >
+          <Logo className="h-7 w-7" />
           City Ranking
         </Link>
 
