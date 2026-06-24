@@ -155,6 +155,8 @@ export interface PublicProfile {
   markers: GlobeMarker[];
   stats: { cities: number; countries: number };
   social: { followers: number; following: number; likes: number };
+  millionCities: number; // the hero collection stat
+  badges: { id: string; name: string; emoji: string; description: string }[];
 }
 
 // Public-safe author shape embedded in feed items — no email/authId.

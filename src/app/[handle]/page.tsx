@@ -133,6 +133,21 @@ export default async function ProfilePage({
             </p>
           )}
 
+          {/* Hero collection stat — the million-city number is the identity flex. */}
+          <div className="mt-3 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2">
+            <span className="text-lg" aria-hidden>
+              🌆
+            </span>
+            <span className="text-foreground">
+              <span className="text-xl font-bold">{profile.millionCities}</span>{" "}
+              <span className="text-sm text-muted-foreground">
+                {profile.millionCities === 1
+                  ? "million-city slept in"
+                  : "million-cities slept in"}
+              </span>
+            </span>
+          </div>
+
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span className="text-foreground">
               <span className="font-semibold">{profile.stats.cities}</span>{" "}
@@ -159,6 +174,20 @@ export default async function ProfilePage({
               </span>
             </span>
           </div>
+
+          {profile.badges.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
+              {profile.badges.map((b) => (
+                <span
+                  key={b.id}
+                  title={b.description}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-1 text-xs font-medium text-foreground"
+                >
+                  <span aria-hidden>{b.emoji}</span> {b.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

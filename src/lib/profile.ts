@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/db";
+import { badgesForVisits, type BadgeVisit } from "@/lib/badges";
 import type { GlobeMarker, PublicProfile } from "@/types";
 
 // Fetch a user's public profile by handle, or null if it doesn't exist or the
@@ -38,6 +39,8 @@ export const getPublicProfile = cache(
             comment: true,
             startDate: true,
             endDate: true,
+            // _count.districts + city.population feed the badge engine below.
+            _count: { select: { districts: true } },
             city: {
               select: {
                 id: true,
@@ -45,6 +48,7 @@ export const getPublicProfile = cache(
                 country: true,
                 latitude: true,
                 longitude: true,
+                population: true,
               },
             },
           },
@@ -83,6 +87,20 @@ export const getPublicProfile = cache(
     const markers = Array.from(cityMap.values());
     const countries = new Set(markers.map((m) => m.country));
 
+    // Badges + the million-city hero stat, computed from the RAW visits (not the
+    // city-deduped markers) so repeat visits and per-month bursts are counted.
+    const badgeVisits: BadgeVisit[] = user.visits.map((v) => ({
+      rating: v.rating,
+      startDate: v.startDate,
+      cityId: v.city.id,
+      country: v.city.country,
+      population: v.city.population,
+      latitude: v.city.latitude,
+      longitude: v.city.longitude,
+      districtCount: v._count.districts,
+    }));
+    const { stats: badgeStats, badges } = badgesForVisits(badgeVisits);
+
     return {
       username: user.username,
       name: user.name,
@@ -95,6 +113,8 @@ export const getPublicProfile = cache(
         following: user._count.following,
         likes: likesReceived,
       },
+      millionCities: badgeStats.millionCities,
+      badges,
     };
   }
 );
