@@ -9,6 +9,20 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ## Stand & nächste Schritte (Resume hier)
 
+**🔐 AUTH/MAIL (2026-06-25, live):** E-Mail-Bestätigung **an** + **Resend** als SMTP-Provider
+(Brevo ging nicht — SMS-Verify aus Oman blockiert). Domain `ranking.place` in Resend verifiziert
+(DKIM/SPF via Cloudflare „Auto configure"), Absender `noreply@ranking.place`. Supabase: Custom SMTP
+(`smtp.resend.com:465`, user `resend`, Passwort = Resend-API-Key) + „Confirm email" an + Redirect-URLs
+(`localhost:3000/**`, `www.ranking.place/**`). Code live: `/auth/callback` (OAuth+Recovery-Exchange),
+`/auth/reset`, „Passwort vergessen", „Check your email". **Getestet & funktioniert.**
+- **OFFEN: Google-Login.** Code fertig (Button war committet, dann rausgenommen weil Provider noch nicht
+  konfiguriert). TODO: Google-Cloud OAuth-Client (Redirect-URI `https://gvrocksdppdidkqwbrsx.supabase.co/auth/v1/callback`)
+  → Client-ID/Secret in Supabase (Sign In/Providers → Google) → Google-Button in `login/page.tsx` wieder rein.
+  Google-Cloud-UI war im Browser kaputt (Extension?) → **im Inkognito** nochmal versuchen.
+- **OFFEN: Consent-Screen „publishen"** (Google) vor öffentlichem Launch; Test-User `aaaservicegraf+ranktest1@gmail.com`
+  in Supabase→Users löschen.
+- **OFFEN #5 Rechtliches** (Impressum/Datenschutz) = letzter Go-Live-Blocker.
+
 **📍 STRATEGIE/FOKUS:** siehe `ROADMAP.md` (Repo-Root) — geschärfte Vision „Letterboxd
 für Reisen": Millionenstadt-Sammlung (Linse, kein Filter) + Distrikte (Tiefe) + Badges,
 sozial, Globe als Sammelbrett. Positionierung gegen Nomad List (nomads.com). Nächste
