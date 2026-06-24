@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { Avatar } from "@/components/ui/Avatar";
 import { DISTRICT_FREQUENCIES } from "@/config/constants";
 
 const FREQ_WEIGHT: Record<string, number> = Object.fromEntries(
@@ -58,24 +59,41 @@ export default async function CityDetailPage({
     orderBy: { rating: "desc" },
     select: {
       rating: true,
+      comment: true,
       user: { select: { username: true, name: true, avatarUrl: true } },
     },
   });
   const seenRaters = new Set<string>();
-  const otherRaters: { username: string; name: string | null; rating: number }[] =
-    [];
+  const otherRaters: {
+    username: string;
+    name: string | null;
+    avatarUrl: string | null;
+    rating: number;
+    comment: string | null;
+  }[] = [];
   for (const v of otherCityVisits) {
     if (!v.user.username || seenRaters.has(v.user.username)) continue;
     seenRaters.add(v.user.username);
     otherRaters.push({
       username: v.user.username,
       name: v.user.name,
+      avatarUrl: v.user.avatarUrl,
       rating: v.rating,
+      comment: v.comment,
     });
   }
 
   // Nothing to show if the viewer hasn't been here AND no public user has either.
   if (!hasOwnVisits && otherRaters.length === 0) notFound();
+
+  // Community rating (best visit per other public user) — shown prominently so a
+  // city you haven't visited still surfaces what the community thinks.
+  const communityRaters = otherRaters.length;
+  const communityAvg = communityRaters
+    ? Math.round(
+        otherRaters.reduce((sum, r) => sum + r.rating, 0) / communityRaters
+      )
+    : 0;
 
   // Aggregate district experiences across all visits to this city. Two dimensions
   // kept separate: avgRating (appeal) and weightSum (how much time spent overall),
@@ -164,16 +182,34 @@ export default async function CityDetailPage({
           </div>
         </div>
       ) : (
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">
-            You haven&apos;t rated {city.name} yet.
-          </p>
-          <Link
-            href="/visits/new"
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Add a visit
-          </Link>
+        <div className="mb-8 rounded-xl border border-border bg-card p-5">
+          <div className="flex items-center gap-4">
+            <div
+              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg text-xl font-bold"
+              style={{
+                backgroundColor: `${ratingToColor(communityAvg)}20`,
+                color: ratingToColor(communityAvg),
+              }}
+            >
+              {ratingToDisplay(communityAvg)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                Community rating
+              </p>
+              <p className="text-xs text-muted-foreground">
+                from {communityRaters}{" "}
+                {communityRaters === 1 ? "traveller" : "travellers"} · you
+                haven&apos;t rated it yet
+              </p>
+            </div>
+            <Link
+              href="/visits/new"
+              className="flex-shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Add yours
+            </Link>
+          </div>
         </div>
       )}
 
@@ -226,38 +262,42 @@ export default async function CityDetailPage({
             Who else has been here
           </h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Other travellers who rated {city.name} — tap to see their globe.
+            How other travellers rated {city.name} — tap to see their globe.
           </p>
           <div className="space-y-2">
             {otherRaters.map((r) => {
               const display = r.name ?? `@${r.username}`;
-              const initial = (r.name ?? r.username).charAt(0).toUpperCase();
               return (
                 <Link
                   key={r.username}
                   href={`/@${r.username}`}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-accent"
+                  className="block rounded-xl border border-border bg-card p-3 transition-colors hover:bg-accent"
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                    {initial}
+                  <div className="flex items-center gap-3">
+                    <Avatar src={r.avatarUrl} name={display} size={40} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {display}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        @{r.username}
+                      </p>
+                    </div>
+                    <div
+                      className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+                      style={{
+                        backgroundColor: `${ratingToColor(r.rating)}20`,
+                        color: ratingToColor(r.rating),
+                      }}
+                    >
+                      {ratingToDisplay(r.rating)}
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {display}
+                  {r.comment && (
+                    <p className="mt-2 text-sm leading-relaxed text-card-foreground">
+                      {r.comment}
                     </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      @{r.username}
-                    </p>
-                  </div>
-                  <div
-                    className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-                    style={{
-                      backgroundColor: `${ratingToColor(r.rating)}20`,
-                      color: ratingToColor(r.rating),
-                    }}
-                  >
-                    {ratingToDisplay(r.rating)}
-                  </div>
+                  )}
                 </Link>
               );
             })}
