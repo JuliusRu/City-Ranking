@@ -52,7 +52,7 @@ export function Header() {
   }
 
   return (
-    <header className="relative h-16 border-b border-border bg-card/80 backdrop-blur-sm">
+    <header className="relative z-50 h-16 border-b border-border bg-card/80 backdrop-blur-sm">
       <div className="flex h-full items-center justify-between px-4 sm:px-6">
         <Link href="/" className="text-lg font-bold text-primary sm:text-xl">
           City Ranking
