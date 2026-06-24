@@ -47,7 +47,46 @@ export function ImageUpload({
     }
   }
 
-  const preview = shape === "circle" ? "h-20 w-20 rounded-full" : "h-40 w-full rounded-xl";
+  const previewContent = value ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={value} alt="" className="h-full w-full object-cover" />
+  ) : (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className="text-muted-foreground"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="m21 15-5-5L5 21" />
+    </svg>
+  );
+
+  const buttons = (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+      >
+        {uploading ? "Uploading…" : value ? "Change photo" : "Upload photo"}
+      </button>
+      {value && !uploading && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+        >
+          Remove
+        </button>
+      )}
+    </>
+  );
 
   return (
     <div className="space-y-2">
@@ -55,59 +94,32 @@ export function ImageUpload({
         <label className="block text-sm font-medium text-foreground">{label}</label>
       )}
 
-      <div className="flex items-center gap-4">
-        <div
-          className={`${preview} flex flex-shrink-0 items-center justify-center overflow-hidden border border-border bg-card ${
-            shape === "square" ? "max-w-xs" : ""
-          }`}
-        >
-          {value ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-muted-foreground"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="m21 15-5-5L5 21" />
-            </svg>
-          )}
-        </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFile}
+        className="hidden"
+      />
 
-        <div className="flex flex-col gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFile}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
-          >
-            {uploading ? "Uploading…" : value ? "Change photo" : "Upload photo"}
-          </button>
-          {value && !uploading && (
-            <button
-              type="button"
-              onClick={() => onChange(null)}
-              className="text-left text-sm text-muted-foreground hover:text-destructive"
-            >
-              Remove
-            </button>
-          )}
+      {shape === "circle" ? (
+        // Avatar: small round preview with the controls beside it.
+        <div className="flex items-center gap-4">
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-card">
+            {previewContent}
+          </div>
+          <div className="flex flex-col gap-2">{buttons}</div>
         </div>
-      </div>
+      ) : (
+        // Photo: full-width preview on top, controls stacked below — cleaner on
+        // mobile than squeezing the buttons beside a wide image.
+        <div className="space-y-3">
+          <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-card">
+            {previewContent}
+          </div>
+          <div className="flex flex-wrap gap-2">{buttons}</div>
+        </div>
+      )}
     </div>
   );
 }
