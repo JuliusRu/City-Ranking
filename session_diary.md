@@ -9,6 +9,25 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ## Stand & nächste Schritte (Resume hier)
 
+**Branch `feature/profiles-branding-districts` (Stand 2026-06-24):** Großer Social-/Branding-Ausbau,
+noch NICHT in `main` gemergt. Enthält: Atlas-Branding + Logo, öffentliche @username-Profile,
+Districts, Places, Fotos (Supabase Storage), **Feed + Likes + Kommentare + Follows + Profil-Counts**,
+„Who else has been here" + Community-Rating, **Suche (Leute + Städte)**, Mobile-Hamburger + Mobile-Audit,
+Mobile-Dev-Workflow (`dev:lan` + Tailscale/Cloudflare-Origins).
+
+**✅ Prod-DB migriert (2026-06-24):** Alle 6 ausstehenden Migrationen via `prisma migrate deploy`
+auf Prod angewandt (districts, venues, follows_likes, comments, photo_url, **rls_new_tables**).
+`migrate status` → „up to date". RLS=true auf allen 6 neuen Tabellen verifiziert (Backstop intakt).
+Die `.env`-CLI zeigt auf Prod (direkter IPv6-Host `db.…supabase.co:5432`) und war vom Mac erreichbar.
+
+**Deploy-Sequenz noch offen (in dieser Reihenfolge!):**
+1. ✅ Prod-Migrationen (erledigt — „Expand"-Phase, additiv, alte Live-App unberührt).
+2. ⏳ **Supabase Storage Bucket `photos`** anlegen (public) + Insert/Delete-Policy auf eigenen Ordner
+   (sonst schlagen Foto-Uploads in Prod fehl). Dashboard-Schritt für Julius.
+3. ⏳ **Secret Rotation (#3)** — DB-Passwort + Supabase-Keys (geleakt) rotieren + in Coolify-Env
+   aktualisieren. Launch-Blocker.
+4. ⏳ **Branch → `main` mergen** → triggert Coolify-Deploy (= „Code danach"-Phase). ERST nach 2+3.
+
 **Live-Status (Stand 2026-05-28):** ranking.place ist live als **Multi-User-Web-App** — Landing,
 Signup/Login (Supabase E-Mail+Passwort), per-User-Journal/Globe, Gating. Web-v1 steht.
 
