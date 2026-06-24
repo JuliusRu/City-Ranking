@@ -15,6 +15,15 @@ Districts, Places, Fotos (Supabase Storage), **Feed + Likes + Kommentare + Follo
 „Who else has been here" + Community-Rating, **Suche (Leute + Städte)**, Mobile-Hamburger + Mobile-Audit,
 Mobile-Dev-Workflow (`dev:lan` + Tailscale/Cloudflare-Origins).
 
+**✅ Branch live auf Prod (2026-06-24):** Per `git push origin HEAD:main` deployt; Coolify-Build lief,
+`www.ranking.place` läuft mit der neuen Version (verifiziert: /api/search 200, /feed 307).
+
+**AI-Quick-Add (2026-06-24):** `/visits/new` hat einen „✨ From text"-Modus — Freitext/Diktat (Typeless/
+Whisperflow) → `/api/visits/parse` ruft OpenRouter (Default `google/gemini-3.1-flash-lite`, ~$0.25/Mio),
+extrahiert Felder + geocodet die Stadt → füllt das bestehende Formular vor (manuelle Eingabe bleibt).
+**Key:** `OPENROUTER_API_KEY` liegt lokal in `.env.local`; **muss in Coolify-Env gesetzt werden**, sonst
+gibt die Parse-Route in Prod 502. Modell per `OPENROUTER_MODEL` überschreibbar.
+
 **✅ Prod-DB migriert (2026-06-24):** Alle 6 ausstehenden Migrationen via `prisma migrate deploy`
 auf Prod angewandt (districts, venues, follows_likes, comments, photo_url, **rls_new_tables**).
 `migrate status` → „up to date". RLS=true auf allen 6 neuen Tabellen verifiziert (Backstop intakt).

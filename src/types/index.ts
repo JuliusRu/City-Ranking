@@ -211,6 +211,32 @@ export interface SearchResults {
   cities: CitySearchResult[];
 }
 
+// AI-extracted visit fields returned by /api/visits/parse. The city is already
+// geocoded (or null if it couldn't be resolved); cityQuery is what the model
+// read so the UI can show "couldn't find <X>".
+export interface ParsedVisit {
+  city: GeocodingResultLite | null;
+  cityQuery: string | null;
+  rating: number | null;
+  startDate: string | null;
+  endDate: string | null;
+  comment: string | null;
+  tripType: string | null;
+  budgetLevel: string | null;
+  transport: string | null;
+  wouldReturn: boolean | null;
+  districts: { name: string; rating: number; frequency: DistrictFrequency }[];
+}
+
+export interface GeocodingResultLite {
+  name: string;
+  country: string;
+  state?: string;
+  latitude: number;
+  longitude: number;
+  externalId: string;
+}
+
 export type FeedScope = "global" | "following";
 
 export interface FeedPage {

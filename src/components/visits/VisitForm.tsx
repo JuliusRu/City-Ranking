@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CitySearchInput } from "@/components/cities/CitySearchInput";
 import { DistrictPicker, type DistrictEntry } from "@/components/districts/DistrictPicker";
@@ -11,13 +11,15 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { useToast } from "@/components/ui/Toast";
 import { TRIP_TYPES, BUDGET_LEVELS, TRANSPORT_METHODS } from "@/config/constants";
 import type { GeocodingResult } from "@/lib/geocoding";
-import type { VisitWithCity } from "@/types";
+import type { VisitWithCity, ParsedVisit } from "@/types";
 
 interface VisitFormProps {
   visit?: VisitWithCity | null;
+  // AI-extracted values to seed a fresh form (from the "From text" quick-add).
+  prefill?: ParsedVisit | null;
 }
 
-export function VisitForm({ visit }: VisitFormProps) {
+export function VisitForm({ visit, prefill }: VisitFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const isEditing = !!visit;
@@ -38,23 +40,40 @@ export function VisitForm({ visit }: VisitFormProps) {
           latitude: visit.city.latitude,
           longitude: visit.city.longitude,
         }
+      : prefill?.city
+      ? {
+          name: prefill.city.name,
+          country: prefill.city.country,
+          state: prefill.city.state,
+          latitude: prefill.city.latitude,
+          longitude: prefill.city.longitude,
+          externalId: prefill.city.externalId,
+        }
       : null
   );
   const [cityId, setCityId] = useState(visit?.cityId ?? "");
-  const [rating, setRating] = useState(visit?.rating ?? 50);
+  const [rating, setRating] = useState(visit?.rating ?? prefill?.rating ?? 50);
   const [startDate, setStartDate] = useState(
-    visit ? new Date(visit.startDate).toISOString().split("T")[0] : ""
+    visit
+      ? new Date(visit.startDate).toISOString().split("T")[0]
+      : prefill?.startDate ?? ""
   );
   const [endDate, setEndDate] = useState(
     visit?.endDate
       ? new Date(visit.endDate).toISOString().split("T")[0]
-      : ""
+      : prefill?.endDate ?? ""
   );
-  const [comment, setComment] = useState(visit?.comment ?? "");
-  const [tripType, setTripType] = useState(visit?.tripType ?? "");
-  const [budgetLevel, setBudgetLevel] = useState(visit?.budgetLevel ?? "");
-  const [transport, setTransport] = useState(visit?.transport ?? "");
-  const [wouldReturn, setWouldReturn] = useState(visit?.wouldReturn ?? null);
+  const [comment, setComment] = useState(visit?.comment ?? prefill?.comment ?? "");
+  const [tripType, setTripType] = useState(visit?.tripType ?? prefill?.tripType ?? "");
+  const [budgetLevel, setBudgetLevel] = useState(
+    visit?.budgetLevel ?? prefill?.budgetLevel ?? ""
+  );
+  const [transport, setTransport] = useState(
+    visit?.transport ?? prefill?.transport ?? ""
+  );
+  const [wouldReturn, setWouldReturn] = useState(
+    visit?.wouldReturn ?? prefill?.wouldReturn ?? null
+  );
   const [highlights, setHighlights] = useState(visit?.highlights ?? "");
   const [photoUrl, setPhotoUrl] = useState<string | null>(visit?.photoUrl ?? null);
   const [districts, setDistricts] = useState<DistrictEntry[]>(
@@ -120,6 +139,15 @@ export function VisitForm({ visit }: VisitFormProps) {
       setErrors({ city: "Could not save city. Please try again." });
     }
   }
+
+  // When seeded from the AI quick-add, the city is geocoded but has no id yet —
+  // resolve it once on mount (same create-or-find flow as picking a city).
+  useEffect(() => {
+    if (prefill?.city && !cityId && !isEditing) {
+      handleCitySelect({ ...prefill.city, displayName: prefill.city.name });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
