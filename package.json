@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:lan": "next dev -H 0.0.0.0",
     "build": "node scripts/copy-cesium.mjs && next build",
     "start": "next start",
     "lint": "eslint",
