@@ -9,6 +9,17 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ## Stand & nächste Schritte (Resume hier)
 
+**📍 STRATEGIE/FOKUS:** siehe `ROADMAP.md` (Repo-Root) — geschärfte Vision „Letterboxd
+für Reisen": Millionenstadt-Sammlung (Linse, kein Filter) + Distrikte (Tiefe) + Badges,
+sozial, Globe als Sammelbrett. Positionierung gegen Nomad List (nomads.com). Nächste
+To-dos priorisiert dort. **Empfohlener Start: #1 Millionenstadt-/Badge-System.**
+
+**🌍 Globe seit 2026-06-25 auf MapLibre GL** (Cesium komplett raus): projection:'globe' +
+Atmosphäre/Sterne (startupmap.one-Look), GPU-GeoJSON-Marker (HTML-Marker driften auf der
+Kugel!), Light/Dark-theme-aware (CARTO dark-matter/positron), Hillshade-Terrain (AWS-DEM).
+Nur `GlobeViewer.tsx` wurde getauscht; Stil-URL ist eine Konstante (swap → OpenFreeMap/MapTiler).
+
+
 **Branch `feature/profiles-branding-districts` (Stand 2026-06-24):** Großer Social-/Branding-Ausbau,
 noch NICHT in `main` gemergt. Enthält: Atlas-Branding + Logo, öffentliche @username-Profile,
 Districts, Places, Fotos (Supabase Storage), **Feed + Likes + Kommentare + Follows + Profil-Counts**,
