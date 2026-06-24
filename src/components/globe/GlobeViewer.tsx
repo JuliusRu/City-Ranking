@@ -1,18 +1,100 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
-import { CESIUM_BASE_URL } from "@/lib/cesium-config";
+import { useEffect, useRef, useState } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { GLOBE } from "@/config/constants";
 import { ratingToColor } from "@/lib/rating";
 import type { GlobeMarker } from "@/types";
 
-// Load Cesium widget CSS
-import "cesium/Build/Cesium/Widgets/widgets.css";
+const SRC = "cr-cities";
+const DOTS = "cr-dots";
+const LABELS = "cr-labels";
+const DEM = "cr-dem";
+const HILLSHADE = "cr-hillshade";
+
+// Free, no-key CARTO vector styles — a dark and a light variant so the globe
+// follows the app's light/dark theme. Swap for OpenFreeMap/MapTiler here.
+type ThemeStyle = {
+  style: string;
+  bg: string;
+  sky: maplibregl.SkySpecification;
+  text: string;
+  halo: string;
+  hillShadow: string;
+  hillHighlight: string;
+};
+const DARK: ThemeStyle = {
+  style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  bg: "#06060c",
+  sky: {
+    "sky-color": "#0a0a16",
+    "sky-horizon-blend": 0.6,
+    "horizon-color": "#16233f",
+    "horizon-fog-blend": 0.6,
+    "fog-color": "#0a0a16",
+    "fog-ground-blend": 0.4,
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 0.9, 6, 0.6, 9, 0],
+  },
+  text: "#ffffff",
+  halo: "rgba(0,0,0,0.9)",
+  hillShadow: "#000000",
+  hillHighlight: "#33486b",
+};
+const LIGHT: ThemeStyle = {
+  style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  bg: "#dde6ef",
+  sky: {
+    "sky-color": "#bcd3ec",
+    "sky-horizon-blend": 0.6,
+    "horizon-color": "#d6e2ee",
+    "horizon-fog-blend": 0.6,
+    "fog-color": "#dde6ef",
+    "fog-ground-blend": 0.4,
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 6, 0.5, 9, 0],
+  },
+  text: "#1f2937",
+  halo: "rgba(255,255,255,0.9)",
+  hillShadow: "#5b6b7a",
+  hillHighlight: "#ffffff",
+};
+
+function isDark(): boolean {
+  return (
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark")
+  );
+}
 
 interface GlobeViewerProps {
   markers?: GlobeMarker[];
   onMarkerClick: (marker: GlobeMarker) => void;
   flyToTarget?: { longitude: number; latitude: number; key: number } | null;
+}
+
+// Markers as a GeoJSON source → GPU layers, which follow the globe projection
+// exactly (HTML markers drift on the sphere at low zoom).
+function toFeatureCollection(markers: GlobeMarker[]): GeoJSON.FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: markers.map((m) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [m.longitude, m.latitude] },
+      properties: {
+        id: m.id,
+        cityId: m.cityId,
+        cityName: m.cityName,
+        country: m.country,
+        latitude: m.latitude,
+        longitude: m.longitude,
+        rating: m.rating,
+        startDate: m.startDate,
+        endDate: m.endDate ?? "",
+        comment: m.comment ?? "",
+        color: ratingToColor(m.rating),
+      },
+    })),
+  };
 }
 
 export function GlobeViewer({
@@ -21,254 +103,193 @@ export function GlobeViewer({
   flyToTarget,
 }: GlobeViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<unknown>(null);
-  const cesiumRef = useRef<typeof import("cesium") | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const clickRef = useRef(onMarkerClick);
+  clickRef.current = onMarkerClick;
+  const markersRef = useRef<GlobeMarker[]>(markers);
+  markersRef.current = markers;
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cesiumReady, setCesiumReady] = useState(0);
 
-  const flyTo = useCallback(
-    (longitude: number, latitude: number) => {
-      const Cesium = cesiumRef.current;
-      const viewer = viewerRef.current as InstanceType<
-        typeof import("cesium").Viewer
-      > | null;
-      if (!Cesium || !viewer || viewer.isDestroyed()) return;
+  // Apply projection, atmosphere, source + layers for the given theme. Re-runs
+  // after a theme switch (setStyle wipes custom sources/layers).
+  function decorate(map: maplibregl.Map, t: ThemeStyle) {
+    map.setProjection({ type: "globe" });
+    map.setSky(t.sky);
 
-      viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(
-          longitude,
-          latitude,
-          GLOBE.FLY_TO_ALTITUDE
-        ),
-        orientation: {
-          heading: Cesium.Math.toRadians(0),
-          pitch: Cesium.Math.toRadians(GLOBE.FLY_TO_PITCH),
-          roll: 0,
-        },
-        duration: GLOBE.FLY_TO_DURATION,
-        easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
+    // Terrain relief: a free DEM (AWS terrain tiles, terrarium-encoded) rendered
+    // as hillshade so mountains get visible shading. Added before the markers so
+    // the city dots/labels stay on top.
+    if (!map.getSource(DEM)) {
+      map.addSource(DEM, {
+        type: "raster-dem",
+        tiles: [
+          "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+        ],
+        encoding: "terrarium",
+        tileSize: 256,
+        maxzoom: 13,
+        attribution: "Terrain: Mapzen / AWS Open Data",
       });
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    let cancelled = false;
-    let viewer: InstanceType<typeof import("cesium").Viewer> | null = null;
-
-    async function initCesium() {
-      try {
-        const Cesium = await import("cesium");
-
-        // If the effect was cleaned up while we were loading, bail out
-        if (cancelled) return;
-
-        cesiumRef.current = Cesium;
-
-        // Set base URL for Cesium assets
-        (window as unknown as Record<string, unknown>).CESIUM_BASE_URL =
-          CESIUM_BASE_URL;
-
-        if (!containerRef.current) return;
-
-        viewer = new Cesium.Viewer(containerRef.current, {
-          baseLayerPicker: false,
-          geocoder: false,
-          homeButton: false,
-          sceneModePicker: false,
-          selectionIndicator: false,
-          timeline: false,
-          animation: false,
-          fullscreenButton: false,
-          vrButton: false,
-          navigationHelpButton: false,
-          infoBox: false,
-          creditContainer: document.createElement("div"),
-          baseLayer: new Cesium.ImageryLayer(
-            new Cesium.OpenStreetMapImageryProvider({
-              url: "https://tile.openstreetmap.org/",
-            })
-          ),
-        });
-
-        // Darker globe atmosphere
-        viewer.scene.globe.enableLighting = false;
-        viewer.scene.backgroundColor =
-          Cesium.Color.fromCssColorString("#0a0a1a");
-        viewer.scene.globe.baseColor =
-          Cesium.Color.fromCssColorString("#1a1a2e");
-
-        viewerRef.current = viewer;
-
-        // Use a counter so each init triggers a fresh marker render
-        setCesiumReady((prev) => prev + 1);
-
-        // Force resize to fill container
-        viewer.resize();
-
-        // Click handler
-        const handler = new Cesium.ScreenSpaceEventHandler(
-          viewer.scene.canvas
-        );
-        handler.setInputAction(
-          (event: { position: import("cesium").Cartesian2 }) => {
-            const picked = viewer!.scene.pick(event.position);
-            if (Cesium.defined(picked) && picked.id?.properties) {
-              const props = picked.id.properties;
-              const marker: GlobeMarker = {
-                id: props.id?.getValue(),
-                cityId: props.cityId?.getValue(),
-                cityName: props.cityName?.getValue(),
-                country: props.country?.getValue(),
-                latitude: props.latitude?.getValue(),
-                longitude: props.longitude?.getValue(),
-                rating: props.rating?.getValue(),
-                startDate: props.startDate?.getValue(),
-                endDate: props.endDate?.getValue() ?? null,
-                comment: props.comment?.getValue(),
-              };
-              onMarkerClick(marker);
-            }
-          },
-          Cesium.ScreenSpaceEventType.LEFT_CLICK
-        );
-
-        // Handle window resize
-        function handleResize() {
-          if (viewer && !viewer.isDestroyed()) {
-            viewer.resize();
-          }
-        }
-        window.addEventListener("resize", handleResize);
-
-        // Store cleanup for resize listener
-        (viewer as unknown as Record<string, unknown>)._resizeCleanup =
-          handleResize;
-      } catch (err) {
-        if (cancelled) return;
-        console.error("Failed to initialize Cesium:", err);
-        setError(
-          "Could not load the 3D globe. Please refresh the page or try a different browser."
-        );
-      }
+    }
+    if (!map.getLayer(HILLSHADE)) {
+      map.addLayer({
+        id: HILLSHADE,
+        type: "hillshade",
+        source: DEM,
+        paint: {
+          "hillshade-exaggeration": 0.7,
+          "hillshade-shadow-color": t.hillShadow,
+          "hillshade-highlight-color": t.hillHighlight,
+        },
+      });
     }
 
-    initCesium();
+    if (!map.getSource(SRC)) {
+      map.addSource(SRC, { type: "geojson", data: toFeatureCollection([]) });
+    }
+    if (!map.getLayer(DOTS)) {
+      map.addLayer({
+        id: DOTS,
+        type: "circle",
+        source: SRC,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 1, 4, 4, 7, 8, 10],
+          "circle-color": ["get", "color"],
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2,
+        },
+      });
+    }
+    if (!map.getLayer(LABELS)) {
+      map.addLayer({
+        id: LABELS,
+        type: "symbol",
+        source: SRC,
+        layout: {
+          "text-field": ["get", "cityName"],
+          "text-font": ["Open Sans Semibold"],
+          "text-size": 12,
+          "text-offset": [0, 1.1],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": t.text,
+          "text-halo-color": t.halo,
+          "text-halo-width": 1.5,
+        },
+      });
+    }
+    (map.getSource(SRC) as maplibregl.GeoJSONSource).setData(
+      toFeatureCollection(markersRef.current)
+    );
+  }
+
+  // Init map once.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    let theme = isDark() ? DARK : LIGHT;
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: theme.style,
+        center: [10, 25],
+        zoom: 1.4,
+        attributionControl: { compact: true },
+      });
+    } catch (err) {
+      console.error("Failed to init MapLibre:", err);
+      setError("Could not load the globe. Please refresh.");
+      return;
+    }
+    mapRef.current = map;
+    if (containerRef.current) containerRef.current.style.background = theme.bg;
+
+    map.on("load", () => {
+      decorate(map, theme);
+
+      // Click + hover affordances on the dots (added once; survive a setStyle).
+      map.on("click", DOTS, (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const p = f.properties as Record<string, unknown>;
+        clickRef.current({
+          id: String(p.id),
+          cityId: String(p.cityId),
+          cityName: String(p.cityName),
+          country: String(p.country),
+          latitude: Number(p.latitude),
+          longitude: Number(p.longitude),
+          rating: Number(p.rating),
+          startDate: String(p.startDate),
+          endDate: p.endDate ? String(p.endDate) : null,
+          comment: p.comment ? String(p.comment) : null,
+        });
+      });
+      map.on("mouseenter", DOTS, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", DOTS, () => {
+        map.getCanvas().style.cursor = "";
+      });
+
+      setReady(true);
+    });
+
+    map.on("error", (e) => console.warn("MapLibre:", e.error?.message ?? e));
+
+    // Follow the app's light/dark theme — swap the style when <html> class flips.
+    const observer = new MutationObserver(() => {
+      const nextDark = isDark();
+      const nextTheme = nextDark ? DARK : LIGHT;
+      if (nextTheme.style === theme.style) return;
+      theme = nextTheme;
+      if (containerRef.current) containerRef.current.style.background = theme.bg;
+      map.setStyle(theme.style);
+      map.once("style.load", () => decorate(map, theme));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     return () => {
-      cancelled = true;
-      if (viewer && !viewer.isDestroyed()) {
-        const cleanup = (viewer as unknown as Record<string, unknown>)
-          ._resizeCleanup as (() => void) | undefined;
-        if (cleanup) window.removeEventListener("resize", cleanup);
-        viewer.destroy();
-      }
+      observer.disconnect();
+      map.remove();
+      mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update markers when they change
+  // Push marker data whenever it changes.
   useEffect(() => {
-    const Cesium = cesiumRef.current;
-    const viewer = viewerRef.current as InstanceType<
-      typeof import("cesium").Viewer
-    > | null;
-    if (!Cesium || !viewer || viewer.isDestroyed() || cesiumReady === 0) return;
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const src = map.getSource(SRC) as maplibregl.GeoJSONSource | undefined;
+    src?.setData(toFeatureCollection(markers));
+  }, [markers, ready]);
 
-    // Remove existing entities
-    viewer.entities.removeAll();
-
-    for (const marker of markers) {
-      // Convert HSL to hex for Cesium compatibility
-      const cssColor = ratingToColor(marker.rating);
-      let color: InstanceType<typeof Cesium.Color>;
-      try {
-        color = Cesium.Color.fromCssColorString(cssColor);
-      } catch {
-        color = Cesium.Color.YELLOW;
-      }
-
-      viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(
-          marker.longitude,
-          marker.latitude,
-          0
-        ),
-        point: {
-          pixelSize: 12,
-          color,
-          outlineColor: Cesium.Color.WHITE,
-          outlineWidth: 2,
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        label: {
-          text: marker.cityName,
-          font: "14px sans-serif",
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
-          outlineColor: Cesium.Color.BLACK,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          pixelOffset: new Cesium.Cartesian2(0, -16),
-          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
-            GLOBE.LABEL_NEAR_DISTANCE,
-            GLOBE.LABEL_FAR_DISTANCE
-          ),
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        properties: {
-          id: marker.id,
-          cityId: marker.cityId,
-          cityName: marker.cityName,
-          country: marker.country,
-          latitude: marker.latitude,
-          longitude: marker.longitude,
-          rating: marker.rating,
-          startDate: marker.startDate,
-          endDate: marker.endDate,
-          comment: marker.comment,
-        },
-      });
-    }
-  }, [markers, cesiumReady]);
-
-  // Fly to target when it changes
+  // Fly to a target when it changes.
   useEffect(() => {
-    if (flyToTarget) {
-      flyTo(flyToTarget.longitude, flyToTarget.latitude);
-    }
-  }, [flyToTarget, flyTo]);
+    const map = mapRef.current;
+    if (!map || !ready || !flyToTarget) return;
+    map.flyTo({
+      center: [flyToTarget.longitude, flyToTarget.latitude],
+      zoom: 4.5,
+      duration: GLOBE.FLY_TO_DURATION * 1000,
+      essential: true,
+    });
+  }, [flyToTarget, ready]);
 
   if (error) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#0a0a1a]">
+      <div className="flex h-full w-full items-center justify-center bg-[#0a0a16]">
         <div className="max-w-sm text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-destructive"
-              />
-              <path
-                d="M12 8v4m0 4h.01"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="text-destructive"
-              />
-            </svg>
-          </div>
           <p className="text-sm text-muted-foreground">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
             Refresh page
           </button>
@@ -278,9 +299,6 @@ export function GlobeViewer({
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-    />
+    <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
   );
 }

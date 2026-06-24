@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:lan": "next dev -H 0.0.0.0",
-    "build": "node scripts/copy-cesium.mjs && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -13,14 +13,13 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
-    "db:studio": "prisma studio",
-    "copy-cesium": "node scripts/copy-cesium.mjs"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
-    "cesium": "^1.138.0",
+    "maplibre-gl": "^5.24.0",
     "next": "16.1.6",
     "prisma": "^6.19.2",
     "react": "19.2.3",
