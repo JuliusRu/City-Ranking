@@ -26,7 +26,7 @@ export default function CitiesPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Cities</h1>
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-8 text-center">
           <p className="text-sm text-destructive">
@@ -39,7 +39,7 @@ export default function CitiesPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Cities</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
@@ -55,7 +55,7 @@ export default function CitiesPage() {
 
   if (cities.length === 0) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Cities</h1>
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <p className="text-lg font-medium text-foreground">No cities yet</p>
@@ -68,10 +68,10 @@ export default function CitiesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Cities</h1>
-        <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+        <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-card p-1">
           {([
             ["ranking", "Ranking"],
             ["name", "Name"],

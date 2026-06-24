@@ -161,7 +161,7 @@ export function DistrictPicker({ city, value, onChange }: DistrictPickerProps) {
                   </svg>
                 </button>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <input
                   type="range"
                   min={0}
@@ -170,32 +170,34 @@ export function DistrictPicker({ city, value, onChange }: DistrictPickerProps) {
                   value={d.rating}
                   onChange={(e) => updateAt(i, { rating: Number(e.target.value) })}
                   aria-label={`${d.name} rating`}
-                  className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-muted"
+                  className="h-2 w-full cursor-pointer appearance-none rounded-full bg-muted sm:flex-1"
                   style={{ accentColor: ratingToColor(d.rating) }}
                 />
-                <div
-                  className="flex h-9 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-                  style={{
-                    backgroundColor: `${ratingToColor(d.rating)}20`,
-                    color: ratingToColor(d.rating),
-                  }}
-                >
-                  {ratingToDisplay(d.rating)}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-9 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+                    style={{
+                      backgroundColor: `${ratingToColor(d.rating)}20`,
+                      color: ratingToColor(d.rating),
+                    }}
+                  >
+                    {ratingToDisplay(d.rating)}
+                  </div>
+                  <select
+                    value={d.frequency}
+                    onChange={(e) =>
+                      updateAt(i, { frequency: e.target.value as DistrictFrequency })
+                    }
+                    aria-label={`${d.name} frequency`}
+                    className="h-9 flex-1 rounded-lg border border-border bg-card px-2 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:flex-shrink-0"
+                  >
+                    {DISTRICT_FREQUENCIES.map((f) => (
+                      <option key={f.value} value={f.value}>
+                        {f.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <select
-                  value={d.frequency}
-                  onChange={(e) =>
-                    updateAt(i, { frequency: e.target.value as DistrictFrequency })
-                  }
-                  aria-label={`${d.name} frequency`}
-                  className="h-9 flex-shrink-0 rounded-lg border border-border bg-card px-2 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  {DISTRICT_FREQUENCIES.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
               </div>
             </li>
           ))}

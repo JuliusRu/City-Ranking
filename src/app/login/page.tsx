@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-sm flex-col gap-6 p-6 pt-16">
+    <div className="mx-auto flex max-w-sm flex-col gap-6 p-4 pt-12 sm:p-6 sm:pt-16">
       <div className="text-center">
         <h1 className="text-2xl font-bold">Welcome to ranking.place</h1>
         <p className="mt-1 text-sm text-muted-foreground">

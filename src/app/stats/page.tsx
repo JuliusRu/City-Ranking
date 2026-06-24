@@ -11,7 +11,7 @@ export default function StatsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-8 text-center">
           <p className="text-sm text-destructive">
@@ -24,7 +24,7 @@ export default function StatsPage() {
 
   if (isLoading || !stats) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -40,7 +40,7 @@ export default function StatsPage() {
 
   if (stats.totalTrips === 0) {
     return (
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <p className="text-lg font-medium text-foreground">No data yet</p>
@@ -53,7 +53,7 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6">
       <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
 
       {/* Summary cards */}
