@@ -1,61 +1,114 @@
 import Link from "next/link";
+import { Logo } from "@/components/layout/Logo";
+import { LandingGlobe } from "./LandingGlobe";
 
-const features = [
+const valueProps = [
   {
-    title: "Your travels on a 3D globe",
-    body: "Every city you've visited, scored and pinned on an interactive globe — your world at a glance.",
+    emoji: "🌆",
+    title: "Collect your world",
+    body: "Million-cities, badges, your running score. It's a collection game — not a dead checklist.",
   },
   {
-    title: "Rank, don't just bookmark",
-    body: "Give each place a personal rating and notes. It's a journal, not a dead Google Maps list.",
+    emoji: "🗺️",
+    title: "Honest, down to the district",
+    body: "Rate cities the way you actually saw them — neighbourhood by neighbourhood. No standardized tables.",
   },
   {
-    title: "Share your ranking",
-    body: "Publish a public profile and compare with friends. Restaurants & bars per city coming next.",
+    emoji: "👥",
+    title: "Discover through people",
+    body: "Find your next trip through travellers whose taste matches yours — not through average scores.",
   },
 ];
 
 export function Landing() {
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 py-16 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Rank every city you&apos;ve ever visited.
+      {/* Hero */}
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-16">
+        <div className="flex flex-col items-start">
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <Logo className="h-4 w-4 text-primary" />
+            Your travel collection game
+          </span>
+
+          <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            How many of the world&apos;s million-cities have you slept in?
           </h1>
-          <p className="max-w-xl text-lg text-muted-foreground">
-            A personal travel journal on an interactive 3D globe. Score the
-            places you&apos;ve been, see your world at a glance, and share your
-            ranking. Free for travelers and digital nomads.
+
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
+            Collect every city you&apos;ve slept in, rate it your way, and share
+            your map. ~500 million-cities worldwide — how far will you get?
           </p>
-          <div className="mt-2 flex gap-3">
+
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/login"
-              className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
             >
-              Get started — it&apos;s free
+              Start your map — free
             </Link>
             <Link
               href="/login"
-              className="rounded-lg border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-accent"
+              className="rounded-xl border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
             >
               Sign in
             </Link>
           </div>
         </div>
 
-        <div className="grid w-full gap-4 sm:grid-cols-3">
-          {features.map((f) => (
+        <LandingGlobe />
+      </section>
+
+      {/* Value props */}
+      <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+        <div className="grid gap-5 sm:grid-cols-3">
+          {valueProps.map((v) => (
             <div
-              key={f.title}
-              className="rounded-xl border border-border bg-card p-5 text-left"
+              key={v.title}
+              className="rounded-2xl border border-border bg-card p-6"
             >
-              <h2 className="mb-1 text-sm font-semibold">{f.title}</h2>
-              <p className="text-sm text-muted-foreground">{f.body}</p>
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-xl">
+                <span aria-hidden>{v.emoji}</span>
+              </div>
+              <h2 className="mb-1.5 text-base font-semibold text-foreground">
+                {v.title}
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {v.body}
+              </p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
+        <div className="flex flex-col items-center gap-5 rounded-3xl border border-border bg-card px-6 py-12 text-center">
+          <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Ready to start collecting?
+          </h2>
+          <p className="max-w-md text-muted-foreground">
+            Free for travellers and digital nomads. Build your map in minutes.
+          </p>
+          <Link
+            href="/login"
+            className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+          >
+            Start your map — free
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-muted-foreground sm:flex-row sm:px-8">
+          <div className="flex items-center gap-2 font-semibold text-foreground">
+            <Logo className="h-5 w-5 text-primary" />
+            ranking.place
+          </div>
+          <p>Your world, ranked. © {new Date().getFullYear()}</p>
+        </div>
+      </footer>
     </div>
   );
 }
