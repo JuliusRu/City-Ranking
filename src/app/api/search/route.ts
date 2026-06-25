@@ -44,16 +44,16 @@ export async function GET(request: NextRequest) {
       prisma.city.findMany({
         where: {
           name: { contains: q, mode: "insensitive" },
-          visits: { some: { user: { publicProfile: true } } },
+          visits: { some: { visibility: "PUBLIC", user: { publicProfile: true } } },
         },
         take: 8,
         select: {
           id: true,
           name: true,
           country: true,
-          // Only public visits feed the community rating.
+          // Only public visits from public profiles feed the community rating.
           visits: {
-            where: { user: { publicProfile: true } },
+            where: { visibility: "PUBLIC", user: { publicProfile: true } },
             select: { rating: true, userId: true },
           },
         },

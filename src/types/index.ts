@@ -54,6 +54,7 @@ export interface VisitData {
   highlights: string | null;
   transport: string | null;
   photoUrl: string | null;
+  visibility?: "PRIVATE" | "FRIENDS" | "PUBLIC";
   userId: string;
   cityId: string;
   createdAt: string;

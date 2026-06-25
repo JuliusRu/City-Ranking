@@ -28,11 +28,11 @@ export const getPublicProfile = cache(
         // followers = edges where this user is followed; following = edges where
         // they are the follower (named via the Follow relation names).
         _count: { select: { followers: true, following: true } },
-        // Profile-wide visibility model: the single `publicProfile` toggle is the
-        // switch. When on, ALL of the user's visits show — no per-visit filter.
-        // (The visits.visibility column is kept in the schema for a future
-        // per-visit/friends-only refinement, but isn't used for gating in v1.)
+        // Visibility model: the `publicProfile` toggle gates the whole profile,
+        // AND each visit must itself be PUBLIC — so a public profile can still
+        // hide individual trips (default is PUBLIC, set per visit on the form).
         visits: {
+          where: { visibility: "PUBLIC" },
           select: {
             id: true,
             rating: true,

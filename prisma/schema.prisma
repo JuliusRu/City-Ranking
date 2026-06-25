@@ -111,7 +111,11 @@ model Visit {
   endDate     DateTime? @map("end_date")
   tripType    String?   @map("trip_type")
   budgetLevel String?   @map("budget_level")
-  visibility  Visibility @default(PRIVATE)
+  // Per-visit privacy. A visit shows on PUBLIC surfaces (public profile, feed,
+  // community ratings) only when it's PUBLIC *and* the owner's profile is public.
+  // Default PUBLIC so a public profile shows everything unless a trip is hidden;
+  // the owner always sees all their own visits regardless. (FRIENDS reserved.)
+  visibility  Visibility @default(PUBLIC)
   wouldReturn Boolean?  @map("would_return")
   highlights  String?   @db.Text
   transport   String?

@@ -78,6 +78,8 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
   );
   const [highlights, setHighlights] = useState(visit?.highlights ?? "");
   const [photoUrl, setPhotoUrl] = useState<string | null>(visit?.photoUrl ?? null);
+  // Per-visit privacy. Only matters when the profile is public; default PUBLIC.
+  const [isPrivate, setIsPrivate] = useState(visit?.visibility === "PRIVATE");
   const [districts, setDistricts] = useState<DistrictEntry[]>(
     visit?.districts?.map((d) => ({
       name: d.district.name,
@@ -190,6 +192,7 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
         wouldReturn,
         highlights: highlights || null,
         photoUrl,
+        visibility: isPrivate ? "PRIVATE" : "PUBLIC",
         // Always sent (incl. empty) so edits persist removals — the API replaces
         // the visit's full district set with this list.
         districts: districts.map((d) => ({
@@ -428,6 +431,25 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
         folder="visits"
         label="Photo (optional)"
       />
+
+      {/* Per-visit privacy: hide a single trip even on a public profile. */}
+      <label className="flex items-start gap-3 rounded-lg border border-border bg-background p-3">
+        <input
+          type="checkbox"
+          checked={isPrivate}
+          onChange={(e) => setIsPrivate(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+        />
+        <span>
+          <span className="block text-sm font-medium text-foreground">
+            Keep this trip private
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Only you can see it — it stays off your public profile, the feed and
+            community ratings. (Your profile-wide setting still applies too.)
+          </span>
+        </span>
+      </label>
 
       <div className="flex gap-3">
         <Button type="submit" disabled={isSubmitting}>

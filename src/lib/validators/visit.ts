@@ -14,6 +14,7 @@ export const createVisitSchema = z
     highlights: z.string().max(5000).optional().nullable(),
     transport: z.enum(["flew", "drove", "train", "bus", "cruise", "other"]).optional().nullable(),
     photoUrl: z.string().url().max(2000).optional().nullable(),
+    visibility: z.enum(["PRIVATE", "FRIENDS", "PUBLIC"]).optional(),
     districts: z.array(visitDistrictInputSchema).max(20).optional(),
   })
   .refine(
@@ -33,6 +34,7 @@ export const updateVisitSchema = z
     highlights: z.string().max(5000).optional().nullable(),
     transport: z.enum(["flew", "drove", "train", "bus", "cruise", "other"]).optional().nullable(),
     photoUrl: z.string().url().max(2000).optional().nullable(),
+    visibility: z.enum(["PRIVATE", "FRIENDS", "PUBLIC"]).optional(),
     // When present, replaces the visit's full district set (omit to leave as-is).
     districts: z.array(visitDistrictInputSchema).max(20).optional(),
   })

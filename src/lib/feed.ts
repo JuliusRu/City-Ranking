@@ -86,7 +86,12 @@ export async function getFeed({
   // followed user's ratings while their profile is public).
   const rows = await prisma.visit.findMany({
     where: {
-      AND: [{ user: { publicProfile: true } }, authorFilter, cursorFilter],
+      AND: [
+        { user: { publicProfile: true } },
+        { visibility: "PUBLIC" }, // hidden trips never reach the feed
+        authorFilter,
+        cursorFilter,
+      ],
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: take + 1, // fetch one extra to detect whether another page exists
