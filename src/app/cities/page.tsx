@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCityOverviews } from "@/hooks/useCities";
 import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { Container } from "@/components/layout/Container";
 
 type SortBy = "ranking" | "name" | "visitCount" | "lastVisited";
 
@@ -26,21 +27,21 @@ export default function CitiesPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Cities</h1>
+      <Container className="py-8 lg:py-10">
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Cities</h1>
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-8 text-center">
           <p className="text-sm text-destructive">
             Could not load cities. Please try refreshing.
           </p>
         </div>
-      </div>
+      </Container>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Cities</h1>
+      <Container className="py-8 lg:py-10">
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Cities</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <div
@@ -49,28 +50,33 @@ export default function CitiesPage() {
             />
           ))}
         </div>
-      </div>
+      </Container>
     );
   }
 
   if (cities.length === 0) {
     return (
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Cities</h1>
+      <Container className="py-8 lg:py-10">
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Cities</h1>
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <p className="text-lg font-medium text-foreground">No cities yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Add some visits to see your cities here!
           </p>
         </div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6">
-      <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Cities</h1>
+    <Container className="py-8 lg:py-10">
+      <div className="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Cities</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {cities.length} {cities.length === 1 ? "city" : "cities"}, ranked by your rating
+          </p>
+        </div>
         <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-card p-1">
           {([
             ["ranking", "Ranking"],
@@ -143,6 +149,6 @@ export default function CitiesPage() {
           </Link>
         ))}
       </div>
-    </div>
+    </Container>
   );
 }

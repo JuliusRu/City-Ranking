@@ -7,6 +7,7 @@ import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/layout/Logo";
+import { Container } from "@/components/layout/Container";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -54,7 +55,7 @@ export function Header() {
 
   return (
     <header className="relative z-50 h-16 border-b border-border bg-card/80 backdrop-blur-sm">
-      <div className="flex h-full items-center justify-between px-4 sm:px-6">
+      <Container className="flex h-full items-center justify-between">
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-bold text-primary sm:text-xl"
@@ -187,7 +188,7 @@ export function Header() {
             </>
           )}
         </div>
-      </div>
+      </Container>
 
       {/* Mobile nav panel — slides down below the bar, only below md */}
       {user && mobileOpen && (
