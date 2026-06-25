@@ -41,6 +41,10 @@ model User {
   bio           String?  @db.Text
   avatarUrl     String?  @map("avatar_url")
   publicProfile Boolean  @default(false) @map("public_profile")
+  // Null until the user finishes (or skips) the first-run onboarding flow. The
+  // home page redirects to /onboarding while this is null; set on completion or
+  // skip so the redirect fires exactly once per account.
+  onboardedAt   DateTime? @map("onboarded_at")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

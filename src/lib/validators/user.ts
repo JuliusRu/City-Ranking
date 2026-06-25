@@ -23,6 +23,10 @@ export const updateUserSchema = z.object({
   bio: z.string().max(280).nullable().optional(),
   publicProfile: z.boolean().optional(),
   avatarUrl: z.string().url().max(2000).nullable().optional(),
+  // Onboarding sentinel: the client sends `onboarded: true` when finishing or
+  // skipping the first-run flow. The route translates it to onboardedAt = now;
+  // the column itself is never set directly by the client.
+  onboarded: z.literal(true).optional(),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

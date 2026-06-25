@@ -32,11 +32,13 @@ export async function PATCH(request: NextRequest) {
     const userId = await getCurrentUserId();
     if (!userId) return apiUnauthorized();
     const body = await request.json();
-    const data = updateUserSchema.parse(body);
+    const { onboarded, ...data } = updateUserSchema.parse(body);
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data,
+      // `onboarded: true` is a sentinel — stamp the completion time server-side
+      // rather than trusting a client-supplied timestamp.
+      data: onboarded ? { ...data, onboardedAt: new Date() } : data,
       include: { settings: true },
     });
 

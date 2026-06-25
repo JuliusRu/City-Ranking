@@ -412,3 +412,57 @@ Mobile/PWA, Tile-Provider, Ops/CI, Legal, Account-Verwaltung).
 - Nächste Build-Schritte: Multi-User-Migration der Seed-Daten (#5), Logged-out-Gating/Landing
   (#6), Auth-Integrationstests + DB-Authz-Doku (#2-Rest).
 - Secrets-Rotation (Task #3) weiterhin offen — DB-Passwort/Keys sind in alten Chats geleakt.
+
+---
+
+## 2026-06-25 — New-user Onboarding Flow (3 Schritte)
+
+**Warum:** Frisch registrierte Nutzer sahen nach Signup nur einen leeren Globe mit
+einem kleinen „Add your first visit"-Kärtchen — Aktivierungs-Killer für ein
+Logbook+Social-Produkt. Ziel: geführter Erst-Lauf, der (1) erste Städte auf den
+Globe bringt, (2) die @username-Identität aktiviert (überspringbar), (3) den
+Sammel-Payoff (Millionenstädte/Badges) als Belohnung zeigt. Plan-Datei:
+`.claude/plans/synchronous-prancing-thompson.md`.
+
+**Trigger/Gating:**
+- Neue Spalte `User.onboardedAt` (Migration `20260625000000_add_onboarded_at`,
+  rein additiv: `ALTER TABLE users ADD COLUMN onboarded_at TIMESTAMP(3)`).
+- `src/app/page.tsx`: nach `getCurrentUserId()` wird `onboardedAt` geladen; ist es
+  `null` → `redirect("/onboarding")`. Markierung erfolgt server-seitig über
+  PATCH `/api/user {onboarded:true}` (Sentinel → `onboardedAt = new Date()`), damit
+  der Redirect genau einmal pro Account greift.
+- `/onboarding` in `middleware.ts` `protectedPrefixes` aufgenommen.
+
+**Schritte:**
+- Schritt 1 `CityStep` — Modus „Search" (Default, `useCitySearch`) + „From text" (AI):
+  neue Route `POST /api/cities/parse` (chatJSON → Liste `{city,country,rating?}` →
+  je `searchCities()` geocodet, dedup, max 12). „Continue" legt pro Eintrag Stadt
+  (create-or-find, 201/409) + Visit (`cityId`+`rating`+`startDate=heute`) an.
+  Plus „Skip for now".
+- Schritt 2 `IdentityStep` — @username (+ optional Bio) via PATCH `/api/user`
+  `{username,bio,publicProfile:true}` (gleiche 409-/Validierungs-Logik wie Settings).
+  Überspringbar („Maybe later").
+- Schritt 3 `PayoffStep` — GET `/api/onboarding/summary` (millionCities + badges +
+  city/country count via `badgesForVisits`, gleiche Berechnung wie `lib/profile.ts`).
+  CTA „Explore my globe" → markiert onboarded + `window.location.assign("/")`.
+
+**Wiederverwendet (nichts neu gebaut):** `useCitySearch`, `searchCities`,
+create-or-find aus `VisitForm.handleCitySelect`, `chatJSON`, `Rating`, `Toast`,
+`badgesForVisits`, Badge-Darstellung aus `[handle]/page.tsx`.
+
+**Verifikation:** `tsc --noEmit` grün, `next build` grün (alle 3 neuen Routen),
+eslint grün. Gating live geprüft: `/onboarding` → 307 (logged out), 
+`/api/onboarding/summary` → 401 (logged out). Migration lokal angewandt
+(`localhost:5433`), `prisma generate` ok. Manueller Auth-Flow (Login → 3 Schritte)
+steht für Julius im Browser aus.
+
+**OFFEN / Entscheidung für Prod-Deploy:**
+- Prod-Migration noch nicht ausgespielt (Coolify migriert NICHT automatisch):
+  `DATABASE_URL=<prod IPv4 pooler> npx prisma migrate deploy`.
+- **Backfill-Entscheidung:** Bestehende Prod-Nutzer haben `onboarded_at = NULL` und
+  würden beim nächsten Besuch ins Onboarding geschickt. Empfehlung: beim Prod-Deploy
+  einmalig `UPDATE users SET onboarded_at = created_at WHERE onboarded_at IS NULL;`
+  ausführen, damit nur NEUE Signups das Onboarding sehen. (Lokal bewusst NICHT
+  gebackfillt, damit der Flow testbar bleibt.)
+- Dev-Server nach `next build` neu gestartet (build korrumpiert `.next` für dev →
+  `rm -rf .next` + `dev:lan` neu, wie gehabt).
