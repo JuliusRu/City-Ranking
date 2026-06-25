@@ -18,8 +18,8 @@ const valueProps = [
   },
   {
     emoji: "🌍",
-    title: "A map you can share",
-    body: "Everywhere you've been on one 3D globe — a single link, not 200 buried Instagram posts. Drop it in your bio.",
+    title: "Yours to keep — or share",
+    body: "Everywhere you've been on one 3D globe. Keep it completely private, or share the whole thing with a single link — not 200 buried Instagram posts.",
   },
   {
     emoji: "🗺️",
@@ -120,6 +120,61 @@ export function Landing() {
           actually matches yours.{" "}
           <span className="text-foreground/70">Not average scores. People.</span>
         </p>
+      </section>
+
+      {/* Same place, different eyes — the comparison heart (the origin idea) */}
+      <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+        <div className="grid items-center gap-8 rounded-2xl border border-border bg-card p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              The same place, through different eyes
+            </h2>
+            <p className="mt-4 leading-relaxed text-muted-foreground">
+              You walked Lisbon in golden spring and called it magic. A friend hit
+              it in grey, drizzly January and shrugged. Same city — two honest
+              rankings, because nobody sees a place the same way.
+            </p>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              Follow the people you actually travel-talk with and compare the cities
+              you&apos;ve both been to.{" "}
+              <span className="text-foreground/70">
+                It&apos;s literally why this exists — one of us kept the list on
+                paper, the other in his head. We just wanted to compare.
+              </span>
+            </p>
+          </div>
+
+          {/* Two contrasting takes on one city — show the idea, don't just say it */}
+          <div className="flex flex-col gap-3">
+            {[
+              { who: "You · summer", score: 88, color: "#6f9b5e", note: "Parks in full bloom, long golden evenings. Felt alive." },
+              { who: "Leon · winter", score: 54, color: "#c08552", note: "Grey, drizzly, everything overpriced. Couldn't wait to leave." },
+            ].map((t) => (
+              <div
+                key={t.who}
+                className="flex items-start gap-3 rounded-xl border border-border bg-background p-4"
+              >
+                <div
+                  className="flex h-11 w-12 flex-shrink-0 items-center justify-center rounded-lg text-base font-bold"
+                  style={{ backgroundColor: `${t.color}22`, color: t.color }}
+                >
+                  {(t.score / 10).toFixed(1)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">
+                    London{" "}
+                    <span className="font-normal text-muted-foreground">
+                      · {t.who}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                    {t.note}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Closing CTA */}
