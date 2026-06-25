@@ -234,6 +234,22 @@ model VisitLike {
   @@map("visit_likes")
 }
 
+// Beta feedback, captured from the in-app widget. Append-only log; user fields
+// are a denormalised snapshot (no FK) so a message survives even if the account
+// is later deleted, and reading needs no join.
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  username  String?
+  email     String?
+  message   String   @db.Text
+  path      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("feedback")
+}
+
 // A comment on a shared visit. Many per visit, newest-first in the UI. Cascade-
 // deletes with either the author or the visit.
 model VisitComment {

@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Logo } from "@/components/layout/Logo";
 import { Container } from "@/components/layout/Container";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 const navItems = [
   { href: "/", label: "Globe" },
@@ -100,6 +101,9 @@ export function Header() {
                   );
                 })}
               </nav>
+
+              {/* Beta feedback — pill on desktop, in the menu on mobile */}
+              <FeedbackButton />
 
               {/* Search — always visible */}
               <Link
@@ -218,6 +222,8 @@ export function Header() {
                 </Link>
               );
             })}
+            <div className="my-1 border-t border-border" />
+            <FeedbackButton variant="menu" />
           </div>
         </nav>
       )}
