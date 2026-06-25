@@ -15,12 +15,14 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 (`smtp.resend.com:465`, user `resend`, Passwort = Resend-API-Key) + „Confirm email" an + Redirect-URLs
 (`localhost:3000/**`, `www.ranking.place/**`). Code live: `/auth/callback` (OAuth+Recovery-Exchange),
 `/auth/reset`, „Passwort vergessen", „Check your email". **Getestet & funktioniert.**
-- **OFFEN: Google-Login.** Code fertig (Button war committet, dann rausgenommen weil Provider noch nicht
-  konfiguriert). TODO: Google-Cloud OAuth-Client (Redirect-URI `https://gvrocksdppdidkqwbrsx.supabase.co/auth/v1/callback`)
-  → Client-ID/Secret in Supabase (Sign In/Providers → Google) → Google-Button in `login/page.tsx` wieder rein.
-  Google-Cloud-UI war im Browser kaputt (Extension?) → **im Inkognito** nochmal versuchen.
-- **OFFEN: Consent-Screen „publishen"** (Google) vor öffentlichem Launch; Test-User `aaaservicegraf+ranktest1@gmail.com`
-  in Supabase→Users löschen.
+- **✅ Google-Login fertig & live.** OAuth-Client in Google Cloud, Provider in Supabase aktiv.
+  **Wichtige Lehre:** Der **`/auth/callback` MUSS client-seitig** sein (Browser-`exchangeCodeForSession`) —
+  die Server-Route-Variante setzte Session-Cookies auf eine `NextResponse.redirect`, die der Browser verwirft
+  → Nutzer landeten ausgeloggt. Außerdem: lokal **immer `localhost:3000`** testen, NICHT `0.0.0.0:3000`
+  (kein „secure context" → Cookies brechen). `/auth/callback` ist aus der Middleware ausgenommen.
+- **OFFEN: Google-Consent-Screen „publishen"** (Google Cloud) vor öffentlichem Launch — im „Testing"-Modus
+  können sich sonst nur freigegebene Test-Nutzer mit Google einloggen. Test-User
+  `aaaservicegraf+ranktest1@gmail.com` in Supabase→Users löschen.
 - **OFFEN #5 Rechtliches** (Impressum/Datenschutz) = letzter Go-Live-Blocker.
 
 **📍 STRATEGIE/FOKUS:** siehe `ROADMAP.md` (Repo-Root) — geschärfte Vision „Letterboxd
