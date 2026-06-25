@@ -5,8 +5,15 @@ import { createClient } from "@/lib/supabase/client";
 // to the user's own folder (see the setup notes in the PR / chat).
 export const PHOTO_BUCKET = "photos";
 
-export const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5 MB
+// Safety-net cap, checked AFTER client-side downscaling — so a normal phone
+// photo (which shrinks to well under 1 MB) never trips it; only a pathological
+// file that failed to downscale would. Phone cameras routinely produce 5–10 MB.
+export const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10 MB
 export const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+// Longest edge we keep — plenty for a feed/profile photo, tiny to store.
+const MAX_DIMENSION = 2048;
+const JPEG_QUALITY = 0.82;
 
 // Reject oversized or non-image files before we hit the network. Returns an
 // error message, or null when the file is acceptable.
@@ -15,9 +22,55 @@ export function validatePhoto(file: File): string | null {
     return "Please choose a JPG, PNG or WebP image.";
   }
   if (file.size > MAX_PHOTO_BYTES) {
-    return "Image must be 5 MB or smaller.";
+    return "Image must be 10 MB or smaller.";
   }
   return null;
+}
+
+/**
+ * Downscale + re-encode a chosen image in the browser before upload. Caps the
+ * longest edge at MAX_DIMENSION and re-encodes as JPEG, which: keeps uploads
+ * fast, keeps Supabase Storage usage tiny (1 GB free tier), sidesteps both the
+ * app and bucket size limits, and strips EXIF (incl. GPS) for privacy. Any
+ * failure (or a file that wouldn't get smaller) falls back to the original.
+ */
+export async function downscaleImage(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("decode failed"));
+      i.src = url;
+    });
+
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+    // Already small in both dimensions and bytes → don't bother re-encoding.
+    if (scale === 1 && file.size <= 1_500_000) return file;
+
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const blob = await new Promise<Blob | null>((res) =>
+      canvas.toBlob(res, "image/jpeg", JPEG_QUALITY)
+    );
+    if (!blob || blob.size >= file.size) return file; // no win → keep original
+
+    const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+    return new File([blob], name, { type: "image/jpeg" });
+  } catch {
+    return file; // on any error, upload the original and let validation decide
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 /**

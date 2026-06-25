@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadPhoto, validatePhoto } from "@/lib/storage";
+import { uploadPhoto, validatePhoto, downscaleImage } from "@/lib/storage";
 import { useToast } from "@/components/ui/Toast";
 
 // Reusable single-image picker. Uploads straight to Supabase Storage and hands
@@ -28,15 +28,23 @@ export function ImageUpload({
     e.target.value = ""; // allow re-picking the same file later
     if (!file) return;
 
-    const err = validatePhoto(file);
-    if (err) {
-      toast(err, "error");
+    // Reject obviously-wrong types up front (cheap, instant feedback).
+    if (!file.type.startsWith("image/")) {
+      toast("Please choose a JPG, PNG or WebP image.", "error");
       return;
     }
 
     setUploading(true);
     try {
-      const url = await uploadPhoto(file, folder);
+      // Shrink big phone photos in the browser, then validate what we'll
+      // actually upload (size is checked post-downscale).
+      const processed = await downscaleImage(file);
+      const err = validatePhoto(processed);
+      if (err) {
+        toast(err, "error");
+        return;
+      }
+      const url = await uploadPhoto(processed, folder);
       onChange(url);
     } catch (error) {
       const message =
