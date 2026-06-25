@@ -55,7 +55,7 @@ export function Header() {
   }
 
   return (
-    <header className="relative z-50 h-16 border-b border-border bg-card/80 backdrop-blur-sm">
+    <header className="relative z-50 h-16 border-b border-border glass">
       <Container className="flex h-full items-center justify-between">
         <Link
           href="/"

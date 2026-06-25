@@ -59,8 +59,46 @@
   --color-leaf-foreground: var(--leaf-foreground);
   --color-earth: var(--earth);
   --color-earth-foreground: var(--earth-foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+}
+
+/* ── Design tokens: brand gradient + liquid-glass material ──────────────────
+   Both are defined ONCE here and consumed via the classes below, so every
+   gradient/glass surface in the app is literally the same material — the rule
+   that keeps it from looking patched-together. */
+
+:root {
+  /* "Horizon" — sky-blue easing into a deeper teal/indigo. */
+  --brand-grad: linear-gradient(135deg, #5b9bb5 0%, #46789a 50%, #4a5f9e 100%);
+}
+.dark {
+  --brand-grad: linear-gradient(135deg, #6fb0c8 0%, #4f8aa8 48%, #5a6db0 100%);
+}
+
+/* Gradient accents — use SPARINGLY: one hero element per view + primary actions. */
+.bg-gradient-brand {
+  background-image: var(--brand-grad);
+}
+.text-gradient-brand {
+  background-image: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Liquid-glass material — translucent + blur + hairline top highlight + depth.
+   Sets only the *material* (no border/radius), so each consumer adds its own
+   shape. Use ONLY on chrome floating over imagery (header, globe overlays,
+   modals) — never on content cards over the flat background. */
+.glass {
+  background-color: var(--card); /* fallback if color-mix unsupported */
+  background-color: color-mix(in srgb, var(--card) 62%, transparent);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+    0 8px 30px rgb(0 0 0 / 0.25);
 }
 
 body {

@@ -74,7 +74,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="mx-4 w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl"
+        className="mx-4 w-full max-w-lg rounded-xl border border-border glass p-6 shadow-2xl"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="modal-title" className="text-lg font-semibold text-foreground">

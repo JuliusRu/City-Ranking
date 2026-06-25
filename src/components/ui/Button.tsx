@@ -8,7 +8,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+  primary: "bg-gradient-brand text-white shadow-sm hover:opacity-90",
   secondary: "bg-accent text-foreground hover:bg-muted",
   destructive: "bg-destructive text-white hover:bg-destructive/90",
   ghost: "text-foreground hover:bg-accent",

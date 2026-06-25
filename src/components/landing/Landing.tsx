@@ -31,7 +31,7 @@ export function Landing() {
             Your travel collection game
           </span>
 
-          <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-gradient-brand sm:text-5xl lg:text-6xl">
             How many of the world&apos;s million-cities have you slept in?
           </h1>
 
@@ -43,7 +43,7 @@ export function Landing() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/login"
-              className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+              className="rounded-xl bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
             >
               Start your map — free
             </Link>

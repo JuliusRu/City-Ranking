@@ -18,7 +18,7 @@ export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSideba
 
   if (markers.length === 0) {
     return (
-      <div className="absolute left-4 top-4 z-10 max-w-xs rounded-2xl border border-border bg-card/95 p-5 shadow-xl backdrop-blur-md">
+      <div className="absolute left-4 top-4 z-10 max-w-xs rounded-2xl border border-border glass p-5">
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -59,7 +59,7 @@ export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSideba
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Show visited cities"
-        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm font-medium text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-accent"
+        className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full border border-border glass px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <line x1="8" y1="6" x2="21" y2="6" />
@@ -76,7 +76,7 @@ export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSideba
   }
 
   return (
-    <div className="absolute left-4 top-4 z-10 flex max-h-[calc(100%-2rem)] w-64 flex-col overflow-hidden rounded-2xl border border-border bg-card/95 shadow-xl backdrop-blur-md sm:w-72">
+    <div className="absolute left-4 top-4 z-10 flex max-h-[calc(100%-2rem)] w-64 flex-col overflow-hidden rounded-2xl border border-border glass sm:w-72">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Visited Cities{" "}
