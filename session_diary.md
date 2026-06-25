@@ -500,3 +500,32 @@ vor dem Code-Deploy (DB-Operation, unabhängig vom Build).
 
 **Hinweis:** Geocoding-Pfad gibt jetzt für JEDE Stadt population mit (auch <1M) — die
 million-cities-Zählung filtert in `lib/badges.ts` weiterhin auf ≥1.000.000.
+
+---
+
+## 2026-06-25 (Forts.) — Friends-Beta-Vorbereitung
+
+Mehrere Schritte, alle live:
+- **Design-Prototyp** (Commit 553d780): neues `<Container>` (max-w-6xl + Gutter) an Header
+  UND Cities-Seite → Kanten richten sich aus; Globe-Sidebar schwebt jetzt (rounded-2xl,
+  Schatten, inset) statt an der Viewport-Kante zu kleben. Bewusst nur Cities/Globe (Rest alt
+  zum Vergleich). Restliche Seiten + „Entboxen" stehen noch aus.
+- **Foto-Upload** (d5bed6e): Browser-seitiges Downscaling auf 2048px JPEG vor Upload → löst
+  Julius' 5-MB-Problem, spart Free-Tier-Storage, strippt EXIF/GPS. Hard-Cap auf 10 MB
+  (geprüft NACH dem Verkleinern). `src/lib/storage.ts` `downscaleImage()`.
+- **Tab-Icon** (df28d7a): App-Logo (volle Marke) als Favicon — `src/app/icon.svg` +
+  `apple-icon.png` + multi-res `favicon.ico`. Generator: `scripts/make-icons.cjs`.
+- **Demo-Daten auf Prod** (Skript `prisma/seed-demo.ts`): 6 klar markierte Demo-Personas
+  („… (Demo)", `@…_demo`, Bio-Tag) mit 77 Visits, Follows/Likes/Kommentaren → Feed/Suche/
+  Profile/Globe befüllt für die Tester. Löschen: `DELETE FROM users WHERE email LIKE 'demo+%@ranking.place'`.
+- **Feedback-Widget** (cee5f84): Header-Button (Desktop-Pill + Mobile-Menü) → Modal → POST
+  `/api/feedback` → neue `feedback`-Tabelle (mit RLS-Backstop). Anonym-tauglich, snapshottet
+  username/email. Lesen: `SELECT * FROM feedback ORDER BY created_at DESC`.
+
+**Infra-Stolperstein:** `prisma migrate deploy` gegen Prod schlug P1001 fehl — der direkte
+DB-Host ist IPv6-only, Julius' Oman-Netz (CGNAT/VPN) hat keine IPv6-Route. Workaround: über
+den **Session-Pooler** `aws-1-eu-west-1.pooler.supabase.com:5432` (User `postgres.<ref>`,
+PW aus `.env`) migriert. Siehe Memory [[project_supabase_ipv6_pooler]].
+
+**Offen für Friends-Beta:** Julius' echter Handy-Durchlauf (Signup→Onboarding→Upload). Danach
+für Public-Launch: Legal (Impressum/Datenschutz), Design-Rollout über restliche Seiten.
