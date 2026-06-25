@@ -70,7 +70,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and _next internals
-    "/((?!_next/static|_next/image|favicon.ico|cesium/).*)",
+    // Match all paths except static files, _next internals, and the auth
+    // callback (the OAuth/recovery route sets the session cookies itself; the
+    // middleware running here competes with that and drops the session).
+    "/((?!_next/static|_next/image|favicon.ico|auth/callback).*)",
   ],
 };
