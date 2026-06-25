@@ -466,3 +466,37 @@ steht für Julius im Browser aus.
   gebackfillt, damit der Flow testbar bleibt.)
 - Dev-Server nach `next build` neu gestartet (build korrumpiert `.next` für dev →
   `rm -rf .next` + `dev:lan` neu, wie gehabt).
+
+---
+
+## 2026-06-25 — Population beim Geocoding (Millionenstadt-Hook real machen)
+
+**Warum:** Befund direkt nach dem Onboarding-Launch: `population` wurde nur im Seed
+gesetzt. Jede Stadt, die ein echter Nutzer über Suche/AI-Parse hinzufügt, kam aus
+Nominatim OHNE Einwohnerzahl → `population = null` → zählte NICHT als Millionenstadt.
+Der zentrale Sammel-Hook (Payoff-Schritt „X Millionenstädte" + Million-Club-Badge,
+laut Produktvision DAS Unterscheidungsmerkmal zu Nomad List) feuerte für reale
+Nutzer also gar nicht.
+
+**Fix (keine neue Abhängigkeit):** Nominatim liefert `population` zuverlässig via
+`extratags=1` (empirisch an Tokyo/Berlin/Lisbon/Porto/Maastricht/Muscat geprüft).
+- `lib/geocoding.ts`: `extratags=1` + `parsePopulation()` → `GeocodingResult.population`.
+- `population` durch ALLE City-Create-Pfade geschleust: `visits/parse`, `cities/parse`,
+  `VisitForm.handleCitySelect` (+ prefill), `CityStep` (DraftCity/resolveCityId).
+  Die `createCitySchema` akzeptierte `population` schon optional → DB-seitig nichts nötig.
+- `/api/cities/search` reicht `searchCities`-Ergebnisse durch → trägt population automatisch.
+- Definition: Nominatim gibt Stadt-KERN-Einwohner (Lisbon „proper" 545k, nicht Metro ~2,9M).
+  Konsistent, gut genug; Schwelle/Definition später ggf. verfeinern.
+
+**Backfill bestehender Städte:** neues Skript `prisma/backfill-population.ts` — re-geocodet
+alle Städte mit `population IS NULL` (1,2s-Delay = Nominatim-Politeness), schreibt
+population zurück. Idempotent (nur NULL-Zeilen).
+- Lokal: 2 Städte enriched (Berlin, Warsaw). Prod: 3 (Astana, Berlin, Warsaw).
+
+**Verifikation/Deploy:** tsc + build grün. Commit `9694894` → push main → Coolify (~2 Min).
+Code-Live-Marker: `/api/cities/search?q=Tokyo` (public, keine Auth) liefert jetzt
+`population: 13613660` — vorher fehlte das Feld komplett. Prod-Backfill lief bereits
+vor dem Code-Deploy (DB-Operation, unabhängig vom Build).
+
+**Hinweis:** Geocoding-Pfad gibt jetzt für JEDE Stadt population mit (auch <1M) — die
+million-cities-Zählung filtert in `lib/badges.ts` weiterhin auf ≥1.000.000.
