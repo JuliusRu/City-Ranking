@@ -37,7 +37,7 @@ export default async function VisitDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <h1 className="mb-6 text-2xl font-bold">Edit Visit</h1>
+      <h1 className="mb-6 text-3xl font-semibold tracking-tight">Edit Visit</h1>
       <Card>
         <VisitForm visit={serialized} />
       </Card>

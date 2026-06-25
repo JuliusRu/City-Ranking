@@ -199,7 +199,7 @@ export function CityStep({ onComplete }: { onComplete: () => void }) {
           onClick={() => setMode("search")}
           className={`flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors ${
             mode === "search"
-              ? "bg-primary text-primary-foreground"
+              ? "bg-gradient-brand text-white"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -210,7 +210,7 @@ export function CityStep({ onComplete }: { onComplete: () => void }) {
           onClick={() => setMode("text")}
           className={`flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors ${
             mode === "text"
-              ? "bg-primary text-primary-foreground"
+              ? "bg-gradient-brand text-white"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >

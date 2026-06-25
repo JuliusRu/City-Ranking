@@ -12,7 +12,7 @@ export default function StatsPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Statistics</h1>
         <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-8 text-center">
           <p className="text-sm text-destructive">
             Could not load statistics. Please try refreshing.
@@ -25,7 +25,7 @@ export default function StatsPage() {
   if (isLoading || !stats) {
     return (
       <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Statistics</h1>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <div
@@ -41,7 +41,7 @@ export default function StatsPage() {
   if (stats.totalTrips === 0) {
     return (
       <div className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
+        <h1 className="mb-6 text-3xl font-semibold tracking-tight">Statistics</h1>
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <p className="text-lg font-medium text-foreground">No data yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -54,7 +54,7 @@ export default function StatsPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-4 sm:p-6">
-      <h1 className="mb-6 text-2xl font-bold">Statistics</h1>
+      <h1 className="mb-6 text-3xl font-semibold tracking-tight">Statistics</h1>
 
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">

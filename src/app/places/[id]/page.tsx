@@ -25,7 +25,7 @@ export default async function VenueDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <h1 className="mb-6 text-2xl font-bold">Edit Place</h1>
+      <h1 className="mb-6 text-3xl font-semibold tracking-tight">Edit Place</h1>
       <Card>
         <VenueForm venue={serialized} />
       </Card>

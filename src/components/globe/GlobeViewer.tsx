@@ -289,7 +289,7 @@ export function GlobeViewer({
           <p className="text-sm text-muted-foreground">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             Refresh page
           </button>

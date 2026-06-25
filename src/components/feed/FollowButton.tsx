@@ -60,7 +60,7 @@ export function FollowButton({
       className={`flex-shrink-0 rounded-full font-medium transition-colors disabled:opacity-60 ${sizing} ${
         following
           ? "border border-border text-muted-foreground hover:border-destructive/50 hover:text-destructive"
-          : "bg-primary text-primary-foreground hover:opacity-90"
+          : "bg-gradient-brand text-white hover:opacity-90"
       }`}
     >
       {following ? "Following" : "Follow"}

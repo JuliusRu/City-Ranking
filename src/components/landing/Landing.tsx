@@ -67,7 +67,7 @@ export function Landing() {
               key={v.title}
               className="rounded-2xl border border-border bg-card p-6"
             >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-xl">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-brand text-xl shadow-sm">
                 <span aria-hidden>{v.emoji}</span>
               </div>
               <h2 className="mb-1.5 text-base font-semibold text-foreground">
@@ -92,7 +92,7 @@ export function Landing() {
           </p>
           <Link
             href="/login"
-            className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+            className="rounded-xl bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
           >
             Start your map — free
           </Link>

@@ -69,7 +69,7 @@ export function Header() {
           {isLoading ? null : !user ? (
             <Link
               href="/login"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               Sign In
             </Link>
@@ -171,7 +171,7 @@ export function Header() {
                   <Avatar src={user.avatarUrl} name={user.name} size={36} />
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border bg-card py-1 shadow-lg">
+                  <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border glass py-1 shadow-lg">
                     <Link
                       href="/settings"
                       onClick={() => setDropdownOpen(false)}

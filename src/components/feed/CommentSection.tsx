@@ -77,7 +77,7 @@ export function CommentSection({
         <button
           type="submit"
           disabled={!body.trim() || submitting}
-          className="flex-shrink-0 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="flex-shrink-0 rounded-lg bg-gradient-brand px-3 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "…" : "Post"}
         </button>

@@ -93,7 +93,7 @@ export default function LoginPage() {
     <div className="mx-auto flex max-w-sm flex-col gap-6 p-4 pt-12 sm:p-6 sm:pt-16">
       <div className="flex flex-col items-center text-center">
         <Logo className="mb-3 h-9 w-9 text-primary" />
-        <h1 className="text-2xl font-bold">Welcome to ranking.place</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Welcome to ranking.place</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Sign in or create an account to start your map.
         </p>
@@ -173,7 +173,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="flex-1 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             Sign in
           </button>

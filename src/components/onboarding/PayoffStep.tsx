@@ -103,7 +103,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <p className={`text-2xl font-bold ${hero ? "text-primary" : "text-foreground"}`}>
+      <p className={`text-2xl font-semibold tracking-tight ${hero ? "text-gradient-brand" : "text-foreground"}`}>
         {value}
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>

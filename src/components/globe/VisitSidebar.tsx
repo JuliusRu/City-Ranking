@@ -41,7 +41,7 @@ export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSideba
         {!readOnly && (
           <Link
             href="/visits/new"
-            className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+            className="mt-3 inline-block rounded-lg bg-gradient-brand px-4 py-2 text-xs font-medium text-white hover:opacity-90"
           >
             Add Visit
           </Link>

@@ -28,7 +28,7 @@ export function FeedView() {
             aria-current={scope === t.value ? "page" : undefined}
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               scope === t.value
-                ? "bg-primary text-primary-foreground"
+                ? "bg-gradient-brand text-white"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
           >

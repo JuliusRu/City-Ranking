@@ -8,7 +8,7 @@ export default function VisitsPage() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Visits</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">My Visits</h1>
         <Link href="/visits/new">
           <Button>Add Visit</Button>
         </Link>

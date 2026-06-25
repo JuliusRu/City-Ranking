@@ -205,7 +205,7 @@ function FilterChip({
       onClick={onClick}
       className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
         active
-          ? "bg-primary text-primary-foreground"
+          ? "bg-gradient-brand text-white"
           : "border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
       }`}
     >

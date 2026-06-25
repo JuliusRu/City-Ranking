@@ -100,7 +100,7 @@ export default async function ProfilePage({
       {/* Profile header — top-center overlay, clear of the sidebar (top-left)
           and city info panel (top-right). */}
       <div className="pointer-events-none absolute left-1/2 top-3 z-20 w-[calc(100vw-1rem)] max-w-md -translate-x-1/2 sm:top-4">
-        <div className="pointer-events-auto rounded-2xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur-sm">
+        <div className="pointer-events-auto rounded-2xl border border-border glass p-4 shadow-2xl">
           <div className="flex items-center gap-3">
             <Avatar
               src={profile.avatarUrl}
@@ -139,7 +139,7 @@ export default async function ProfilePage({
               🌆
             </span>
             <span className="text-foreground">
-              <span className="text-xl font-bold">{profile.millionCities}</span>{" "}
+              <span className="text-xl font-bold text-gradient-brand">{profile.millionCities}</span>{" "}
               <span className="text-sm text-muted-foreground">
                 {profile.millionCities === 1
                   ? "million-city slept in"

@@ -8,7 +8,7 @@ export default function PlacesPage() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-6">
       <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Places</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Places</h1>
         <Link href="/places/new">
           <Button>Add Place</Button>
         </Link>

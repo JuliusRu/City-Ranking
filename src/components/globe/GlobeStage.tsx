@@ -57,14 +57,14 @@ export function GlobeStage({ markers, readOnly = false }: GlobeStageProps) {
           {isTouring ? (
             <button
               onClick={stopTour}
-              className="rounded-full border border-border bg-card/95 px-6 py-2 text-sm font-medium text-foreground shadow-lg backdrop-blur-sm hover:bg-accent"
+              className="rounded-full border border-border glass px-6 py-2 text-sm font-medium text-foreground shadow-lg hover:bg-accent"
             >
               Stop Tour
             </button>
           ) : (
             <button
               onClick={handleStartTour}
-              className="rounded-full border border-border bg-card/95 px-6 py-2 text-sm font-medium text-foreground shadow-lg backdrop-blur-sm hover:bg-accent"
+              className="rounded-full border border-border glass px-6 py-2 text-sm font-medium text-foreground shadow-lg hover:bg-accent"
             >
               Tour Cities
             </button>

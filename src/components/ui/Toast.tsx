@@ -70,7 +70,7 @@ function ToastItem({
           ? "bg-green-600 text-white"
           : toast.type === "error"
             ? "bg-destructive text-white"
-            : "bg-card text-foreground border border-border"
+            : "glass text-foreground border border-border"
       }`}
     >
       {toast.type === "success" && (

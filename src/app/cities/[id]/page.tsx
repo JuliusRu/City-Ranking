@@ -152,7 +152,7 @@ export default async function CityDetailPage({
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">{city.name}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{city.name}</h1>
         <p className="text-muted-foreground">
           {[city.state, city.country].filter(Boolean).join(", ")}
         </p>
@@ -205,7 +205,7 @@ export default async function CityDetailPage({
             </div>
             <Link
               href="/visits/new"
-              className="flex-shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              className="flex-shrink-0 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               Add yours
             </Link>

@@ -28,7 +28,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-6 p-4 pt-12 sm:p-6 sm:pt-16">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">Set a new password</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Set a new password</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Choose a new password for your account.
         </p>
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {pending ? "Saving…" : "Update password"}
           </button>

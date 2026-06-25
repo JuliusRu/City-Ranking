@@ -15,7 +15,7 @@ export default function SearchPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <h1 className="mb-4 text-2xl font-bold">Search</h1>
+      <h1 className="mb-4 text-3xl font-semibold tracking-tight">Search</h1>
 
       <div className="relative">
         <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">

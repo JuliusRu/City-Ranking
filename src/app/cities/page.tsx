@@ -89,7 +89,7 @@ export default function CitiesPage() {
               onClick={() => setSortBy(value)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 sortBy === value
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-gradient-brand text-white"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

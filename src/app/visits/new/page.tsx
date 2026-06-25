@@ -12,7 +12,7 @@ export default function NewVisitPage() {
 
   return (
     <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <h1 className="mb-4 text-2xl font-bold">Add Visit</h1>
+      <h1 className="mb-4 text-3xl font-semibold tracking-tight">Add Visit</h1>
 
       {/* Mode toggle: the manual form is the default; "From text" is the AI turbo. */}
       <div className="mb-4 flex gap-1 rounded-lg border border-border bg-card p-1">
@@ -21,7 +21,7 @@ export default function NewVisitPage() {
           aria-current={mode === "form" ? "page" : undefined}
           className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
             mode === "form"
-              ? "bg-primary text-primary-foreground"
+              ? "bg-gradient-brand text-white"
               : "text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
@@ -32,7 +32,7 @@ export default function NewVisitPage() {
           aria-current={mode === "text" ? "page" : undefined}
           className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
             mode === "text"
-              ? "bg-primary text-primary-foreground"
+              ? "bg-gradient-brand text-white"
               : "text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >

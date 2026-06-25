@@ -16,7 +16,7 @@ export function CityInfoPanel({ marker, onClose, onFlyTo, readOnly = false }: Ci
     <div
       role="dialog"
       aria-label={`${marker.cityName} info`}
-      className="absolute right-2 top-2 z-10 w-[calc(100vw-1rem)] max-w-xs rounded-xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur-sm sm:right-4 sm:top-4 sm:w-80 sm:p-5"
+      className="absolute right-2 top-2 z-10 w-[calc(100vw-1rem)] max-w-xs rounded-xl border border-border glass p-4 shadow-2xl sm:right-4 sm:top-4 sm:w-80 sm:p-5"
     >
       <div className="mb-3 flex items-start justify-between">
         <div>
