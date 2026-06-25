@@ -2,21 +2,29 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/Logo";
 import { LandingGlobe } from "./LandingGlobe";
 
+// Illustrative numbers — show the "quantified self" payoff, don't just describe it.
+const showcaseStats = [
+  { n: "23", label: "million-cities" },
+  { n: "61", label: "cities" },
+  { n: "18", label: "countries" },
+  { n: "5", label: "continents" },
+];
+
 const valueProps = [
   {
-    emoji: "🌆",
-    title: "Collect your world",
-    body: "Million-cities, badges, your running score. It's a collection game — not a dead checklist.",
+    emoji: "📊",
+    title: "Your life, in numbers",
+    body: "Million-cities, countries, continents — a running score that climbs as you go. The fun, slightly pointless stats you'll actually want to share.",
+  },
+  {
+    emoji: "🌍",
+    title: "A map you can share",
+    body: "Everywhere you've been on one 3D globe — a single link, not 200 buried Instagram posts. Drop it in your bio.",
   },
   {
     emoji: "🗺️",
     title: "Honest, down to the district",
-    body: "Rate cities the way you actually saw them — neighbourhood by neighbourhood. No standardized tables.",
-  },
-  {
-    emoji: "👥",
-    title: "Discover through people",
-    body: "Find your next trip through travellers whose taste matches yours — not through average scores.",
+    body: "Rate places the way you actually saw them — neighbourhood by neighbourhood. No standardized tables, no fake objectivity.",
   },
 ];
 
@@ -36,8 +44,9 @@ export function Landing() {
           </h1>
 
           <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-            Collect every city you&apos;ve slept in, rate it your way, and share
-            your map. ~500 million-cities worldwide — how far will you get?
+            Log everywhere you&apos;ve slept, rate it your way, and watch your
+            travel stats stack up — on a 3D globe you can actually share. ~500
+            million-cities worldwide. How far will you get?
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -59,8 +68,35 @@ export function Landing() {
         <LandingGlobe />
       </section>
 
+      {/* Stats showcase — make the "quantified self" payoff tangible */}
+      <section className="mx-auto max-w-6xl px-5 pb-12 sm:px-8">
+        <div className="rounded-2xl border border-border bg-card px-6 py-8 sm:py-10">
+          <p className="text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            Your life, in numbers worth sharing
+          </p>
+          <div className="mt-6 flex flex-wrap items-end justify-center gap-x-10 gap-y-6 sm:gap-x-16">
+            {showcaseStats.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-4xl font-semibold tracking-tight text-gradient-brand sm:text-5xl">
+                  {s.n}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mx-auto mt-6 max-w-lg text-center text-sm text-muted-foreground">
+            Instagram never told you you&apos;ve slept in 23 million-cities — or
+            that you&apos;ve been to 5 continents. We do, and you can share the
+            whole map with a single link.
+          </p>
+        </div>
+      </section>
+
       {/* Value props */}
       <section className="mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+        <h2 className="mb-8 text-center text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Why you&apos;ll keep coming back
+        </h2>
         <div className="grid gap-5 sm:grid-cols-3">
           {valueProps.map((v) => (
             <div
@@ -79,12 +115,17 @@ export function Landing() {
             </div>
           ))}
         </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          And soon — discover your next trip through travellers whose taste
+          actually matches yours.{" "}
+          <span className="text-foreground/70">Not average scores. People.</span>
+        </p>
       </section>
 
       {/* Closing CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
         <div className="flex flex-col items-center gap-5 rounded-3xl border border-border bg-card px-6 py-12 text-center">
-          <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Ready to start collecting?
           </h2>
           <p className="max-w-md text-muted-foreground">
