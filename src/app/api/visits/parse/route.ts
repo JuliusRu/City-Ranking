@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
             latitude: best.latitude,
             longitude: best.longitude,
             externalId: best.externalId,
+            population: best.population,
           };
         }
       } catch (e) {

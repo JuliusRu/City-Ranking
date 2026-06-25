@@ -237,6 +237,7 @@ export interface GeocodingResultLite {
   latitude: number;
   longitude: number;
   externalId: string;
+  population?: number | null;
 }
 
 export type FeedScope = "global" | "following";

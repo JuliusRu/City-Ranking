@@ -16,6 +16,7 @@ interface DraftCity {
   latitude: number;
   longitude: number;
   externalId: string;
+  population: number | null;
   rating: number;
 }
 
@@ -35,6 +36,7 @@ async function resolveCityId(c: DraftCity): Promise<string | null> {
       latitude: c.latitude,
       longitude: c.longitude,
       externalId: c.externalId,
+      population: c.population ?? undefined,
     }),
   });
   const data = await res.json();
@@ -93,6 +95,7 @@ export function CityStep({ onComplete }: { onComplete: () => void }) {
       latitude: city.latitude,
       longitude: city.longitude,
       externalId: city.externalId,
+      population: city.population,
     });
     setQuery("");
     setOpen(false);

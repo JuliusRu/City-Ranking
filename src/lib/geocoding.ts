@@ -13,6 +13,9 @@ export interface NominatimResult {
     country?: string;
     country_code?: string;
   };
+  // Present only with extratags=1. OSM stores population as a free-text string
+  // (usually plain digits) so it's optional and must be parsed defensively.
+  extratags?: { population?: string } & Record<string, string>;
   type: string;
   importance: number;
 }
@@ -25,6 +28,17 @@ export interface GeocodingResult {
   longitude: number;
   displayName: string;
   externalId: string;
+  // City-proper population from OSM, or null when untagged. Feeds the
+  // million-cities collection stat + badges.
+  population: number | null;
+}
+
+// Parse OSM's free-text population tag ("13613660", occasionally with stray
+// separators) into a positive integer, or null if it isn't a sane number.
+function parsePopulation(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const n = parseInt(raw.replace(/[^0-9]/g, ""), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 const NOMINATIM_BASE = "https://nominatim.openstreetmap.org";
@@ -36,6 +50,8 @@ export async function searchCities(
   url.searchParams.set("q", query);
   url.searchParams.set("format", "jsonv2");
   url.searchParams.set("addressdetails", "1");
+  // extratags carries the OSM population tag — the source of the million-cities stat.
+  url.searchParams.set("extratags", "1");
   url.searchParams.set("limit", "8");
   url.searchParams.set(
     "featuretype",
@@ -63,6 +79,7 @@ export async function searchCities(
     longitude: parseFloat(r.lon),
     displayName: r.display_name,
     externalId: `${r.osm_type}/${r.osm_id}`,
+    population: parsePopulation(r.extratags?.population),
   }));
 }
 

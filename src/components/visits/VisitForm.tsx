@@ -31,6 +31,7 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
     latitude: number;
     longitude: number;
     externalId?: string;
+    population?: number | null;
   } | null>(
     visit
       ? {
@@ -48,6 +49,7 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
           latitude: prefill.city.latitude,
           longitude: prefill.city.longitude,
           externalId: prefill.city.externalId,
+          population: prefill.city.population,
         }
       : null
   );
@@ -103,6 +105,7 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
       latitude: city.latitude,
       longitude: city.longitude,
       externalId: city.externalId,
+      population: city.population,
     });
 
     try {
@@ -116,6 +119,7 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
           latitude: city.latitude,
           longitude: city.longitude,
           externalId: city.externalId,
+          population: city.population ?? undefined,
         }),
       });
 
@@ -144,7 +148,11 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
   // resolve it once on mount (same create-or-find flow as picking a city).
   useEffect(() => {
     if (prefill?.city && !cityId && !isEditing) {
-      handleCitySelect({ ...prefill.city, displayName: prefill.city.name });
+      handleCitySelect({
+        ...prefill.city,
+        population: prefill.city.population ?? null,
+        displayName: prefill.city.name,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

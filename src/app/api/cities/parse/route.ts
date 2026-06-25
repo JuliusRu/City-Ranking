@@ -23,6 +23,7 @@ export interface ParsedCity {
     latitude: number;
     longitude: number;
     externalId: string;
+    population: number | null;
   };
   rating: number | null;
 }
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
           latitude: best.latitude,
           longitude: best.longitude,
           externalId: best.externalId,
+          population: best.population,
         },
         rating: clampRating(o.rating),
       });
