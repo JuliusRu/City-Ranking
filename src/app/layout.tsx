@@ -16,9 +16,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// metadataBase makes the colocated opengraph-image resolve to an absolute URL,
+// which crawlers (Twitter/X, LinkedIn, WhatsApp, iMessage) require. Falls back to
+// the prod domain so previews work even if the env var isn't set in Coolify.
 export const metadata: Metadata = {
-  title: "City Ranking",
-  description: "Rate and explore cities you've visited on an interactive 3D globe",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.ranking.place"
+  ),
+  title: {
+    default: "ranking.place — Your world, ranked",
+    template: "%s",
+  },
+  description:
+    "Rate and explore the cities you've visited on an interactive 3D globe. Build your travel map, track countries and continents, and share your profile.",
+  applicationName: "ranking.place",
+  openGraph: {
+    type: "website",
+    siteName: "ranking.place",
+    title: "ranking.place — Your world, ranked",
+    description:
+      "Rate and explore the cities you've visited on an interactive 3D globe. Build your travel map and share your profile.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ranking.place — Your world, ranked",
+    description:
+      "Rate and explore the cities you've visited on an interactive 3D globe.",
+  },
 };
 
 export default async function RootLayout({

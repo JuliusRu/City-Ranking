@@ -202,6 +202,14 @@ export function Landing() {
             <Logo className="h-5 w-5 text-primary" />
             ranking.place
           </div>
+          <nav className="flex items-center gap-4">
+            <Link href="/impressum" className="transition-colors hover:text-foreground">
+              Impressum
+            </Link>
+            <Link href="/datenschutz" className="transition-colors hover:text-foreground">
+              Datenschutz
+            </Link>
+          </nav>
           <p>Your world, ranked. © {new Date().getFullYear()}</p>
         </div>
       </footer>

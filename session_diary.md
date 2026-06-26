@@ -7,6 +7,31 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## 2026-06-26 · Launch-Vorbereitung: Legal + Link-Vorschau (Ship-30)
+
+**Was:** Drei der vier Pre-Launch-MUST-FIX abgearbeitet (Analytics bewusst auf später vertagt).
+1. **Legal (minimal, kein Cookie-Banner):** Neue Seiten `src/app/impressum/page.tsx` (§ 5 DDG,
+   echte Daten Julius Rummel/Wedauer Str. 3/45481 Mülheim, Kontakt rummeljulius@gmail.com) und
+   `src/app/datenschutz/page.tsx` (schlanke DSGVO-Erklärung, zugeschnitten auf Supabase-Auth,
+   Foto-Upload, OpenRouter-AI-Transfer USA, Coolify/Oracle-Hosting). Footer-Links in `Landing.tsx`.
+   Beide Seiten `robots: noindex`.
+2. **Root-Metadaten + og:image:** `layout.tsx` Titel `City Ranking` → `ranking.place — Your world,
+   ranked`, dazu `metadataBase` (Fallback prod-Domain), OpenGraph + Twitter-Card. Neue
+   `src/app/opengraph-image.tsx` (Satori-Card, gleiches Muster wie `[handle]/opengraph-image.tsx`).
+
+**Warum:** Public-Launch in DE = Impressums-/Datenschutzpflicht (Abmahn-Risiko). Cookielos +
+nur technisch nötige Auth-Cookies → **kein Consent-Banner nötig** = minimaler Aufwand wie gewünscht.
+Root-Link (ranking.place) wird beim Ship-30-Posting auf X/LinkedIn geteilt → brauchte eigene
+Link-Vorschau (vorher nur `/@handle`-Profile hatten eine).
+
+**Status:** `npm run build` grün, alle drei Routen kompiliert.
+
+**Offen:** (a) **OpenRouter-Key in Coolify-Prod verifizieren** (lokal gesetzt) — sonst AI-Diktat in
+Onboarding-Step 0 → 502. (b) **Analytics** (Plausible, cookielos) bewusst vertagt. (c) Nice-to-have:
+robots.txt/sitemap/manifest, `error.tsx` rohe error.message, Demo-Personas in Prod.
+
+---
+
 ## Stand & nächste Schritte (Resume hier)
 
 **🔐 AUTH/MAIL (2026-06-25, live):** E-Mail-Bestätigung **an** + **Resend** als SMTP-Provider
