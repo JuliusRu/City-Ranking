@@ -186,6 +186,35 @@ gegengeprüft (`venue`, `settings`, `user`, `feedback`) — dort ist `.nullable(
 - **`POST /api/cities` ist unauthentifiziert** — nur Rate-Limit, kein `getCurrentUserId()`.
   Jeder kann Zeilen in `cities` anlegen; genau deshalb ist die Stadt heute entstanden, obwohl der
   Visit-Request scheiterte. Sollte auf „nur eingeloggt" gehen.
+## 2026-06-26 · ranking.place Pro (€1/mo Abo) — Code fertig, Migration live, Push pending
+
+**Was:** Pro-Tier gebaut (Commit `4a1d5a1` auf `feature/profiles-branding-districts`, NICHT
+gepusht). App bleibt frei; Pro = kosmetisches Supporter-Tier (Profil-Badge + Akzentfarbe für
+Profil & geteilte OG-Card). 16 Dateien:
+- **Schema/Migration** `20260626000000_add_pro_and_accent`: `isPro`, `proSince`, `accentColor`,
+  `stripeCustomerId`, `stripeSubscriptionId`. **Auf Prod angewendet** (via IPv4-Session-Pooler
+  `aws-1-eu-west-1.pooler.supabase.com:5432`, weil `.env` auf den IPv6-Direkthost zeigt — siehe
+  [[project_supabase_ipv6_pooler]]). Additiv, kein Downtime.
+- **Stripe** (`mode: "subscription"`): `lib/stripe.ts` (lazy client + price-id getter),
+  `/api/stripe/checkout`, `/api/stripe/webhook` (Signatur-Verify → isPro an/aus über
+  checkout.session.completed + customer.subscription.updated/deleted), `/api/stripe/portal`
+  (Billing-Portal zum Kündigen). isPro setzt NUR der Webhook, nie der Client.
+- **UI**: Settings Pro-Card (Go Pro / Abo verwalten / Farbpicker), Profil-Badge + Akzent-Ring +
+  Hero-Tint, OG-Card-Akzent. API-Guard: nur Pro darf Accent speichern.
+- **Legal**: Stripe-Absatz in Datenschutz.
+
+**Warum Push noch NICHT erfolgt:** „Go Pro" braucht 3 Coolify-Env-Vars (`STRIPE_SECRET_KEY`,
+`STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`) + Webhook-Endpoint + aktiviertes Kundenportal — ohne
+die wirft der Button nur Fehler. Bewusst gehalten, damit kein halbkaputter Bezahl-Button live geht.
+
+**Sicherheitsvorfall:** Julius hat versehentlich seinen `sk_live_…` im Chat gepostet → **muss
+gerollt werden** (Stripe → API-Schlüssel → Schlüssel rollen → sofort). Schlüssel wurde nirgends
+gespeichert. `price_1TmVbYV05My8G7ghXlLY49p4` ist die (nicht-geheime) Live-Preis-ID, 1 €/Monat.
+
+**Offene Schritte (nach Landung):** (1) sk_live rollen, (2) Webhook-Endpoint
+`…/api/stripe/webhook` mit den 3 Events anlegen → whsec, (3) Kundenportal aktivieren, (4) 3 Env-Vars
+in Coolify + Redeploy, (5) ICH pushe dann `4a1d5a1` → main → Coolify deployt mit gesetzten Keys →
+funktioniert beim ersten Deploy, (6) Test mit echter Karte → refunden.
 
 ---
 
