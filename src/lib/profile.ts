@@ -25,6 +25,8 @@ export const getPublicProfile = cache(
         bio: true,
         avatarUrl: true,
         publicProfile: true,
+        isPro: true,
+        accentColor: true,
         // followers = edges where this user is followed; following = edges where
         // they are the follower (named via the Follow relation names).
         _count: { select: { followers: true, following: true } },
@@ -115,6 +117,10 @@ export const getPublicProfile = cache(
       },
       millionCities: badgeStats.millionCities,
       badges,
+      isPro: user.isPro,
+      // Accent is a Pro perk — ignore any stored value for non-Pro users so a
+      // lapsed subscription cleanly reverts to the default brand colour.
+      accentColor: user.isPro ? user.accentColor : null,
     };
   }
 );

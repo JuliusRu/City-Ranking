@@ -103,7 +103,30 @@ export default function DatenschutzPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold">7. Cookies</h2>
+            <h2 className="text-lg font-semibold">7. Zahlungsabwicklung (Pro-Abo)</h2>
+            <p>
+              Wenn du das kostenpflichtige Pro-Abo abschließt, wird die Zahlung
+              über Stripe (Stripe Payments Europe, Ltd.) abgewickelt. Deine
+              Zahlungsdaten (z. B. Kreditkartennummer) gibst du direkt bei Stripe
+              ein; wir selbst erhalten und speichern keine vollständigen
+              Zahlungsdaten, sondern nur eine Kunden- und Abo-Kennung sowie deinen
+              Pro-Status. Dabei kann eine Übermittlung in die USA erfolgen.
+              Rechtsgrundlage ist die Vertragserfüllung (Art. 6 Abs. 1 lit. b
+              DSGVO). Weitere Informationen:{" "}
+              <a
+                href="https://stripe.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                stripe.com/privacy
+              </a>
+              .
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-lg font-semibold">8. Cookies</h2>
             <p>
               Wir setzen ausschließlich technisch notwendige Cookies, die für den
               Login und die Sitzungsverwaltung erforderlich sind. Es werden keine
@@ -113,7 +136,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold">8. Speicherdauer</h2>
+            <h2 className="text-lg font-semibold">9. Speicherdauer</h2>
             <p>
               Deine Konto- und Inhaltsdaten speichern wir, solange dein Konto
               besteht. Wenn du dein Konto löschst, werden die zugehörigen Daten
@@ -123,7 +146,7 @@ export default function DatenschutzPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold">9. Deine Rechte</h2>
+            <h2 className="text-lg font-semibold">10. Deine Rechte</h2>
             <p>
               Du hast das Recht auf Auskunft, Berichtigung, Löschung,
               Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch

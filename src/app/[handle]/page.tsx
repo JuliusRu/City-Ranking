@@ -92,6 +92,8 @@ export default async function ProfilePage({
   const followState = await getFollowState(username);
   const displayName = profile.name ?? `@${profile.username}`;
   const shareUrl = `${SITE_URL}/@${profile.username}`;
+  // Pro accent (already gated to Pro users in getPublicProfile); null = default.
+  const accent = profile.accentColor;
 
   return (
     <div className="relative h-full w-full">
@@ -102,15 +104,33 @@ export default async function ProfilePage({
       <div className="pointer-events-none absolute left-1/2 top-3 z-20 w-[calc(100vw-1rem)] max-w-md -translate-x-1/2 sm:top-4">
         <div className="pointer-events-auto rounded-2xl border border-border glass p-4 shadow-2xl">
           <div className="flex items-center gap-3">
-            <Avatar
-              src={profile.avatarUrl}
-              name={displayName}
-              size={48}
-              className="text-lg"
-            />
+            <div
+              className="flex-shrink-0 rounded-full"
+              // Pro accent ring around the avatar (falls back to no ring).
+              style={accent ? { boxShadow: `0 0 0 2px ${accent}` } : undefined}
+            >
+              <Avatar
+                src={profile.avatarUrl}
+                name={displayName}
+                size={48}
+                className="text-lg"
+              />
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-foreground">
-                {displayName}
+              <p className="flex items-center gap-1.5 truncate font-semibold text-foreground">
+                <span className="truncate">{displayName}</span>
+                {profile.isPro && (
+                  <span
+                    title="ranking.place Pro"
+                    className="inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                    style={{
+                      color: accent ?? "#5B9BB5",
+                      backgroundColor: `${accent ?? "#5B9BB5"}22`,
+                    }}
+                  >
+                    ✦ PRO
+                  </span>
+                )}
               </p>
               <p className="truncate text-sm text-muted-foreground">
                 @{profile.username}
@@ -139,7 +159,12 @@ export default async function ProfilePage({
               🌆
             </span>
             <span className="text-foreground">
-              <span className="text-xl font-bold text-gradient-brand">{profile.millionCities}</span>{" "}
+              <span
+                className={accent ? "text-xl font-bold" : "text-xl font-bold text-gradient-brand"}
+                style={accent ? { color: accent } : undefined}
+              >
+                {profile.millionCities}
+              </span>{" "}
               <span className="text-sm text-muted-foreground">
                 {profile.millionCities === 1
                   ? "million-city slept in"

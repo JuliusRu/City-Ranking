@@ -136,3 +136,27 @@ export const RATE_LIMITS = {
   DELETE: 10,
   SEARCH: 30,
 } as const;
+
+// ranking.place Pro — a one-time "supporter" unlock. The app stays free; Pro
+// only adds cosmetic extras (a profile badge + a custom accent colour). isPro is
+// set exclusively by the Stripe webhook, never by the client.
+export const PRO = {
+  priceDisplay: "€1",
+  interval: "/mo",
+  tagline: "€1/month · keeps ranking.place free for everyone, cancel anytime",
+} as const;
+
+// The accent palette a Pro user can pick for their profile + shared OG card.
+// Constrained to a preset list so the value is always a safe, on-brand hex —
+// the validator rejects anything not in here. First entry == the default brand
+// blue, used as the fallback for free users.
+export const ACCENT_COLORS = [
+  "#5B9BB5", // brand blue (default)
+  "#C08552", // terracotta
+  "#7FA670", // sage
+  "#A87FB5", // lilac
+  "#B5705B", // rust
+  "#D4A24E", // gold
+] as const;
+
+export const DEFAULT_ACCENT = ACCENT_COLORS[0];

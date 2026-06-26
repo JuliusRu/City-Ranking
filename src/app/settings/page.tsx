@@ -14,6 +14,9 @@ import {
   DISTANCE_UNITS,
   TRIP_TYPES,
   BUDGET_LEVELS,
+  PRO,
+  ACCENT_COLORS,
+  DEFAULT_ACCENT,
 } from "@/config/constants";
 
 const SORT_BY_OPTIONS = [
@@ -82,6 +85,11 @@ export default function SettingsPage() {
   const [publicSaving, setPublicSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Pro state
+  const [accentColor, setAccentColor] = useState<string | null>(null);
+  const [proLoading, setProLoading] = useState(false);
+  const isPro = user?.isPro ?? false;
+
   // Settings form state
   const [theme, setTheme] = useState("dark");
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
@@ -102,6 +110,7 @@ export default function SettingsPage() {
       setUsername(user.username ?? "");
       setBio(user.bio ?? "");
       setPublicProfile(user.publicProfile ?? false);
+      setAccentColor(user.accentColor ?? null);
       if (user.settings) {
         setTheme(user.settings.theme);
         setDateFormat(user.settings.dateFormat);
@@ -126,6 +135,21 @@ export default function SettingsPage() {
       html.classList.remove("dark");
     }
   }, [theme]);
+
+  // Surface the Stripe checkout result on return, then refresh so isPro flips
+  // and strip the query param so a refresh doesn't re-toast.
+  useEffect(() => {
+    const pro = new URLSearchParams(window.location.search).get("pro");
+    if (pro === "success") {
+      toast("Welcome to Pro! 🎉", "success");
+      mutate();
+      window.history.replaceState({}, "", "/settings");
+    } else if (pro === "cancelled") {
+      toast("Checkout cancelled", "info");
+      window.history.replaceState({}, "", "/settings");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleProfileSave() {
     setProfileSaving(true);
@@ -174,6 +198,63 @@ export default function SettingsPage() {
       toast("Failed to save public profile", "error");
     } finally {
       setPublicSaving(false);
+    }
+  }
+
+  // Start checkout → redirect to Stripe's hosted page.
+  async function handleGoPro() {
+    setProLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const json = await res.json();
+      if (json.success && json.data?.url) {
+        window.location.href = json.data.url;
+      } else {
+        toast(json.error ?? "Could not start checkout", "error");
+        setProLoading(false);
+      }
+    } catch {
+      toast("Could not start checkout", "error");
+      setProLoading(false);
+    }
+  }
+
+  // Open Stripe's billing portal → manage card / cancel.
+  async function handleManageSubscription() {
+    setProLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const json = await res.json();
+      if (json.success && json.data?.url) {
+        window.location.href = json.data.url;
+      } else {
+        toast(json.error ?? "Could not open billing portal", "error");
+        setProLoading(false);
+      }
+    } catch {
+      toast("Could not open billing portal", "error");
+      setProLoading(false);
+    }
+  }
+
+  // Save the chosen accent immediately (Pro only). Optimistic via mutate().
+  async function handleAccentSelect(color: string | null) {
+    setAccentColor(color);
+    try {
+      const res = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accentColor: color }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast("Accent saved", "success");
+        mutate();
+      } else {
+        toast(json.error ?? "Failed to save accent", "error");
+      }
+    } catch {
+      toast("Failed to save accent", "error");
     }
   }
 
@@ -264,6 +345,75 @@ export default function SettingsPage() {
             </Button>
           </div>
         </div>
+      </Card>
+
+      {/* Pro section */}
+      <Card>
+        <div className="mb-1 flex items-center gap-2">
+          <h2 className="text-lg font-semibold">ranking.place Pro</h2>
+          {isPro && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
+              ✦ Pro
+            </span>
+          )}
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">{PRO.tagline}</p>
+
+        {!isPro ? (
+          <div className="space-y-4">
+            <ul className="space-y-1.5 text-sm text-card-foreground">
+              <li>✦ A Pro badge on your public profile</li>
+              <li>🎨 A custom accent colour for your profile &amp; shared card</li>
+            </ul>
+            <Button onClick={handleGoPro} disabled={proLoading}>
+              {proLoading
+                ? "Starting…"
+                : `Go Pro — ${PRO.priceDisplay}${PRO.interval}`}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                Accent colour
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                {ACCENT_COLORS.map((c) => {
+                  const active = (accentColor ?? DEFAULT_ACCENT) === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      aria-label={`Accent ${c}`}
+                      onClick={() => handleAccentSelect(c)}
+                      className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
+                        active ? "border-foreground" : "border-transparent"
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  );
+                })}
+                {accentColor && (
+                  <button
+                    type="button"
+                    onClick={() => handleAccentSelect(null)}
+                    className="ml-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleManageSubscription}
+              disabled={proLoading}
+              className="text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+            >
+              {proLoading ? "Opening…" : "Manage subscription"}
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* Public profile section */}

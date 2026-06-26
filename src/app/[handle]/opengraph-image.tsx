@@ -28,6 +28,9 @@ export default async function Image({
   const displayName = profile?.name ?? (username ? `@${username}` : "ranking.place");
   const cities = profile?.stats.cities ?? 0;
   const countries = profile?.stats.countries ?? 0;
+  // Pro accent (already gated to Pro users in getPublicProfile) tints the shared
+  // card; non-Pro / missing falls back to the default brand blue.
+  const accent = profile?.accentColor ?? "#5B9BB5";
 
   return new ImageResponse(
     (
@@ -44,7 +47,7 @@ export default async function Image({
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 32, color: "#5B9BB5", fontWeight: 700 }}>
+        <div style={{ display: "flex", fontSize: 32, color: accent, fontWeight: 700 }}>
           ranking.place
         </div>
 
@@ -61,7 +64,7 @@ export default async function Image({
 
         <div style={{ display: "flex", gap: "56px", fontSize: 40 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-            <span style={{ fontWeight: 800, color: "#5B9BB5" }}>{cities}</span>
+            <span style={{ fontWeight: 800, color: accent }}>{cities}</span>
             <span style={{ color: "#A89A87" }}>cities</span>
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>

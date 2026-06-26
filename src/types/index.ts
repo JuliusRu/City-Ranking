@@ -145,6 +145,8 @@ export interface UserData {
   bio: string | null;
   avatarUrl: string | null;
   publicProfile: boolean;
+  isPro: boolean;
+  accentColor: string | null;
 }
 
 // Public-safe shape served on /@username — deliberately excludes email/authId.
@@ -158,6 +160,8 @@ export interface PublicProfile {
   social: { followers: number; following: number; likes: number };
   millionCities: number; // the hero collection stat
   badges: { id: string; name: string; emoji: string; description: string }[];
+  isPro: boolean; // shows the Pro badge + unlocks the custom accent below
+  accentColor: string | null; // chosen accent (Pro only); null = default brand blue
 }
 
 // Public-safe author shape embedded in feed items — no email/authId.

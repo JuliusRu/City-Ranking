@@ -41,6 +41,18 @@ model User {
   bio           String?  @db.Text
   avatarUrl     String?  @map("avatar_url")
   publicProfile Boolean  @default(false) @map("public_profile")
+  // Pro tier (€1/mo subscription). isPro is set ONLY by the Stripe webhook —
+  // true on checkout.session.completed, false on subscription deleted/unpaid —
+  // never by the client. See lib/stripe + /api/stripe/*.
+  isPro              Boolean   @default(false) @map("is_pro")
+  proSince           DateTime? @map("pro_since")
+  // Stripe linkage: customer id powers the "manage/cancel" billing portal;
+  // subscription id lets the webhook map lifecycle events back to this user.
+  stripeCustomerId     String? @unique @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  // Pro-only cosmetic: chosen accent colour (one of ACCENT_COLORS) for the
+  // public profile + shared OG card. Null = default brand blue.
+  accentColor   String?  @map("accent_color")
   // Null until the user finishes (or skips) the first-run onboarding flow. The
   // home page redirects to /onboarding while this is null; set on completion or
   // skip so the redirect fires exactly once per account.

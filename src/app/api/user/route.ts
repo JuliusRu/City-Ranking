@@ -34,6 +34,18 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { onboarded, ...data } = updateUserSchema.parse(body);
 
+    // Accent colour is a Pro perk — never let a non-Pro account persist one
+    // (the UI hides the picker, but the API is the real trust boundary).
+    if (data.accentColor != null) {
+      const me = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { isPro: true },
+      });
+      if (!me?.isPro) {
+        return apiError("Accent colour is a Pro feature", 403);
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       // `onboarded: true` is a sentinel — stamp the completion time server-side

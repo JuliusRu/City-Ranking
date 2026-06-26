@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RESERVED_USERNAMES } from "@/config/constants";
+import { RESERVED_USERNAMES, ACCENT_COLORS } from "@/config/constants";
 
 // 3–20 chars, lowercase letters/digits/underscore. Lowercased before validation
 // so the unique index (case-sensitive in Postgres) never collides on case and
@@ -23,6 +23,10 @@ export const updateUserSchema = z.object({
   bio: z.string().max(280).nullable().optional(),
   publicProfile: z.boolean().optional(),
   avatarUrl: z.string().url().max(2000).nullable().optional(),
+  // Pro-only cosmetic. Constrained to the preset palette (or null to reset) so a
+  // client can never store an arbitrary value; the API additionally enforces
+  // that only Pro users may set a non-null colour.
+  accentColor: z.enum(ACCENT_COLORS).nullable().optional(),
   // Onboarding sentinel: the client sends `onboarded: true` when finishing or
   // skipping the first-run flow. The route translates it to onboardedAt = now;
   // the column itself is never set directly by the client.
