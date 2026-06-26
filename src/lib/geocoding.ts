@@ -71,7 +71,7 @@ export async function searchCities(
 
   const results: NominatimResult[] = await res.json();
 
-  return results.map((r) => ({
+  const mapped = results.map((r) => ({
     name: r.address.city || r.address.town || r.address.village || r.display_name.split(",")[0],
     country: r.address.country || "",
     state: r.address.state,
@@ -81,6 +81,20 @@ export async function searchCities(
     externalId: `${r.osm_type}/${r.osm_id}`,
     population: parsePopulation(r.extratags?.population),
   }));
+
+  // Nominatim often returns the same city at multiple granularities (city-proper
+  // AND metro/region) — identical name+country+state, different population/coords.
+  // Collapse those to the first (highest-importance) hit so the picker isn't
+  // cluttered. Genuinely distinct same-name cities differ by state (e.g. the many
+  // US "Lisbon"s) and are preserved. results[0] is unchanged, so AI geocoding
+  // (which takes the top hit) behaves exactly as before.
+  const seen = new Set<string>();
+  return mapped.filter((c) => {
+    const key = `${c.name}|${c.country}|${c.state ?? ""}`.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export interface DistrictGeocodingResult {

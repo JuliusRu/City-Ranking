@@ -54,6 +54,25 @@ export function Header() {
     window.location.assign("/login");
   }
 
+  // First-run onboarding gets a focused, logo-only header — no nav, so a brand-
+  // new user can't wander off mid-flow. Exact match so only /onboarding changes;
+  // h-16 kept so the layout's 100vh-64px main height stays correct.
+  if (pathname === "/onboarding") {
+    return (
+      <header className="relative z-50 h-16 border-b border-border glass">
+        <Container className="flex h-full items-center justify-center">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-bold text-primary sm:text-xl"
+          >
+            <Logo className="h-7 w-7" />
+            City Ranking
+          </Link>
+        </Container>
+      </header>
+    );
+  }
+
   return (
     <header className="relative z-50 h-16 border-b border-border glass">
       <Container className="flex h-full items-center justify-between">

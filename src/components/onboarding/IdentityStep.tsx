@@ -89,6 +89,13 @@ export function IdentityStep({
         />
       </label>
 
+      <p className="rounded-lg border border-border bg-background px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+        Claiming a handle makes your profile <span className="text-foreground">public</span> —
+        anyone with the link can see your map. You can turn this off anytime in
+        settings, or hide single trips. Prefer to stay private? Just tap “Maybe
+        later”.
+      </p>
+
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
