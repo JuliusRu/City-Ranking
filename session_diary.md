@@ -765,3 +765,59 @@ PW aus `.env`) migriert. Siehe Memory [[project_supabase_ipv6_pooler]].
 
 **Offen für Friends-Beta:** Julius' echter Handy-Durchlauf (Signup→Onboarding→Upload). Danach
 für Public-Launch: Legal (Impressum/Datenschutz), Design-Rollout über restliche Seiten.
+
+---
+
+## 2026-06-29 — STAND & NÄCHSTE SCHRITTE (zum Wiedereinstieg)
+
+### Wo wir stehen
+- ranking.place ist live. Bereits live auf Prod (origin/main @ `3dfeae8`): Onboarding,
+  Design v2 (Inter/Gradient/Glass), Per-Reise-Privacy, Feedback-Widget, **Legal-Seiten +
+  Metadaten/og:image**, Landing-Value-Prop-Rework, Dedupe-Citysearch, Modal-Portal-Fix.
+- **Ship-or-die-Challenge:** braucht einen Buy Button. ✅ Live-Payment-Link existiert
+  (`https://buy.stripe.com/28E6oKdaih1w6rL4eB8k800`) → das Challenge-Kriterium ist damit
+  schon für sich erfüllt.
+- **Pro-Feature (in 2. Session gebaut, 16 Dateien): committet, aber NICHT gepusht** →
+  Commits `4a1d5a1` (Pro) + `b09ed62` (Diary) auf Branch `feature/profiles-branding-districts`,
+  NICHT auf origin/main → **also noch NICHT live.** Working tree clean.
+- **Pro-DB-Migration auf Prod schon angewandt** (Spalten `is_pro`, `pro_since`,
+  `stripe_customer_id`, `stripe_subscription_id`, `accent_color` existieren auf der Live-DB).
+- Stripe-Account aktiviert (Live). Produkt „ranking.place Pro" 1 €/Monat,
+  Price-ID `price_1TmVbYV05My8G7ghXlLY49p4` (nicht geheim).
+- **Eine Claude-Session ab jetzt** — die zweite wurde geschlossen.
+
+### 🚨 SICHERHEIT — zuerst erledigen
+Julius hat im Chat gepostet: **Live Secret Key (`sk_live`), Stripe-Account-Passwort,
+2FA-Wiederherstellungscode.** Alle drei rotieren, bevor irgendwas anderes:
+1. Secret Key rollen → `dashboard.stripe.com/apikeys` (Geheimschlüssel → ⋯ → Rollen).
+2. Stripe-Passwort ändern → `dashboard.stripe.com/settings/user`.
+3. 2FA-Wiederherstellungscodes neu generieren (alten ungültig machen).
+
+### Nächste Schritte — Pro live bringen (Reihenfolge wichtig!)
+1. (Sicherheit oben zuerst.)
+2. **Webhook anlegen** → `dashboard.stripe.com/webhooks` → Endpoint
+   `https://www.ranking.place/api/stripe/webhook`, Events: `checkout.session.completed`,
+   `customer.subscription.updated`, `customer.subscription.deleted` → Signing Secret `whsec_…`.
+3. **Kundenportal aktivieren** → `dashboard.stripe.com/settings/billing/portal`
+   (sonst wirft „Abo verwalten" 500).
+4. **3 Env-Vars in Coolify** (Runtime, NICHT Build): `STRIPE_SECRET_KEY` (der NEUE, gerollte),
+   `STRIPE_PRICE_ID` (`price_1TmVbYV05My8G7ghXlLY49p4`), `STRIPE_WEBHOOK_SECRET` (`whsec_…`) → Redeploy.
+5. **DANN** die 2 Pro-Commits pushen: `git push origin HEAD:main` → Coolify deployt Pro.
+   (Env MUSS vor dem Push stehen — sonst 500 beim „Go Pro".)
+6. **Verifizieren:** Prod baut grün? `/api/stripe/webhook` erreichbar? `isPro` wird bei Kauf gesetzt?
+   Profil-/Settings-Seiten laden fehlerfrei? (Empfehlung: mit echter Karte 1 € testen, ggf. selbst refunden —
+   oder vorab Test-Modus mit Karte 4242 4242 4242 4242, dann dieselben 3 Werte auf Live tauschen.)
+
+### Anderer offener Bug — Oman-Visit
+In Prod „Oman"-Visit (Rating 5,8) hinzugefügt, erscheint nicht auf dem Globus.
+Diagnose: Stadt „Oman" wurde auf Prod erstellt (26.06 09:15) aber **0 Visits** → der Visit-POST
+ist fehlgeschlagen (heute kein einziger Visit auf Prod angelegt). Verdacht: Nicht-Ganzzahl-Rating
+(`5.8` statt `58`) killt die Validierung. „Oman" löst aufs Länderzentrum auf — vermutlich „Muscat" gemeint.
+TODO: Julius retry auf Prod + exakten Fehlertext liefern → dann fixen.
+
+### Infra-Fakten (für eine frische Session)
+- **Deploy** = `git push origin HEAD:main` → Coolify-Build (~3 Min).
+- **Prod-DB-Migration** nur über IPv4-Pooler (Direkthost IPv6-only, von Julius' Oman-Netz tot):
+  `DATABASE_URL="postgresql://postgres.gvrocksdppdidkqwbrsx:<pw aus .env>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres" npx prisma migrate deploy`
+- `OPENROUTER_API_KEY` ist in Coolify gesetzt (AI-Diktat live).
+- `prisma migrate dev` ist kaputt (Shadow-DB) → immer `migrate deploy`.
