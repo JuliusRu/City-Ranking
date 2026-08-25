@@ -231,9 +231,21 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
         router.refresh();
       } else {
         if (data.issues) {
+          // Only a few fields render their own error. Anything else would
+          // vanish silently (the form just sat there), so surface unmapped
+          // issues in the form-level banner instead.
+          const rendered = new Set(["city", "rating", "startDate", "endDate"]);
           const fieldErrors: Record<string, string> = {};
+          const unmapped: string[] = [];
           for (const issue of data.issues) {
-            fieldErrors[issue.path] = issue.message;
+            const field = issue.path === "cityId" ? "city" : issue.path;
+            fieldErrors[field] = issue.message;
+            if (!rendered.has(field)) {
+              unmapped.push(`${issue.path || "form"}: ${issue.message}`);
+            }
+          }
+          if (unmapped.length > 0) {
+            fieldErrors.form = `Could not save visit — ${unmapped.join("; ")}`;
           }
           setErrors(fieldErrors);
         } else {

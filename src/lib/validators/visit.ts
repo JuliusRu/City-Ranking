@@ -5,7 +5,9 @@ export const createVisitSchema = z
   .object({
     cityId: z.string().cuid(),
     rating: z.number().int().min(0).max(100),
-    comment: z.string().max(5000).optional(),
+    // Nullable, not just optional: the form sends `comment || null` for an
+    // empty box, and `.optional()` alone rejects null (like updateVisitSchema).
+    comment: z.string().max(5000).optional().nullable(),
     startDate: z.coerce.date(),
     endDate: z.coerce.date().optional().nullable(),
     tripType: z.enum(["solo", "couple", "family", "friends", "business"]).optional().nullable(),

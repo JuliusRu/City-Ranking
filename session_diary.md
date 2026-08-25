@@ -7,6 +7,57 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## 2026-08-25 · Bugfix: „Add Visit" schlug still fehl, wenn das Kommentar-Feld leer war
+
+**Symptom:** Add-Visit-Formular komplett ausgefüllt (Dubai, 16.–23.06., Rating 9.6, Foto,
+„privat"), Klick auf „Add Visit" — nichts passiert. Kein Toast, kein Fehler, kein Redirect,
+kein Trip in der DB.
+
+**Diagnose (Prod-Belege, nicht geraten):**
+- In `cities` liegt eine NEUE Dubai-Zeile mit `created_at = 2026-08-25 14:18 UTC` und **0 Visits**
+  → der Vorschritt `POST /api/cities` lief durch, `POST /api/visits` nicht.
+- Coolify-Container-Log (`e84w0k4s8kw44ooko08sc0g4`, Image-Tag `3dfeae8`) enthält **kein**
+  `POST /api/visits error:` → kein 500. Der Request starb VOR dem DB-Zugriff, also in der
+  Zod-Validierung (die returnt ohne `console.error`).
+- Alle real über das Formular erzeugten Visits in Prod haben ein Kommentar. Die einzigen mit
+  `comment IS NULL` kamen aus dem Onboarding-Flow oder dem Seed — über das Formular hat also
+  **noch nie** jemand einen Trip ohne Kommentar anlegen können.
+
+**Ursache (zwei Fehler, die sich gegenseitig versteckt haben):**
+1. `createVisitSchema.comment` war `z.string().max(5000).optional()` — **ohne `.nullable()`**.
+   Das Formular sendet `comment: comment || null`, bei leerem Feld also `null`. Zod lehnt `null`
+   bei `.optional()` ab → 400 „expected string, received null". `updateVisitSchema` hatte
+   `.nullable()` längst; im Create war es ein Vergessen-Fehler.
+2. `VisitForm.handleSubmit` mappte Validierungs-Issues auf `errors[issue.path]`, gerendert werden
+   aber nur `city`, `rating`, `startDate`, `endDate` und `form`. Ein Issue auf `comment` (oder
+   `photoUrl`, `visibility`, `districts.*`, `cityId`) verschwand **lautlos** — daher „es passiert
+   einfach nichts" statt einer Fehlermeldung.
+
+**Fix:** (a) `comment` in `createVisitSchema` auf `.optional().nullable()`, konsistent mit jedem
+anderen optionalen Feld dort. (b) `VisitForm`: nicht-gerenderte Issues landen im Formular-Banner,
+`cityId` wird auf das `city`-Feld gemappt. Diese Fehlerklasse kann damit nicht wieder unsichtbar
+werden.
+
+**Verifikation:** `tsc --noEmit` grün, `eslint` grün, `next build` grün. Zusätzlich der exakte
+Formular-Payload (`comment: null`) gegen das echte `createVisitSchema` geprüft → vorher rejected,
+jetzt OK; `endDate < startDate` wird weiter korrekt abgelehnt. Alle anderen Validatoren
+gegengeprüft (`venue`, `settings`, `user`, `feedback`) — dort ist `.nullable()` überall gesetzt,
+`visit.comment` war der einzige Fall.
+
+**Offen / Befunde am Rand:**
+- **Doppelte Dubai-Zeile in Prod:** `cities` hat zwei Dubai/United Arab Emirates —
+  `cmqteu4dw…` (25.2/55.27, population 3.33M, 1 Demo-Visit) und `cmt8r27sw…`
+  (25.0742823/55.1885624, population NULL, 0 Visits, von heute). Grund: Unique-Key ist
+  `[name, country, latitude, longitude]` — dieselbe Stadt mit anderer Geocoding-Präzision legt
+  eine neue Zeile an. Die leere Zeile kann weg; der Unique-Key gehört mittelfristig auf
+  `[name, country]` oder `externalId` umgestellt (Städte-Splits verfälschen sonst Stats,
+  Community-Ratings und „Who else has been here").
+- **`POST /api/cities` ist unauthentifiziert** — nur Rate-Limit, kein `getCurrentUserId()`.
+  Jeder kann Zeilen in `cities` anlegen; genau deshalb ist die Stadt heute entstanden, obwohl der
+  Visit-Request scheiterte. Sollte auf „nur eingeloggt" gehen.
+
+---
+
 ## 2026-06-26 · Launch-Vorbereitung: Legal + Link-Vorschau (Ship-30)
 
 **Was:** Drei der vier Pre-Launch-MUST-FIX abgearbeitet (Analytics bewusst auf später vertagt).
