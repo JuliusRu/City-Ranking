@@ -7,6 +7,72 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## 2026-08-25 · Coolify-Auto-Deploy war seit dem 11.08. tot — Webhook-URL repariert
+
+**Ausgangslage:** Der Bugfix (`559d652`) lag auf `main`, aber auf www.ranking.place lief
+weiter das Image `3dfeae8` vom 26.06. Coolify hatte den Push nicht mitbekommen.
+
+**Diagnose (alles gemessen):**
+- `application_deployment_queues` für App 5: letzter Eintrag `3dfeae8`, 26.06. — für `559d652`
+  war nichts eingereiht.
+- Coolify-Logs: in 20 Minuten **kein einziger Webhook-Request** angekommen. Coolify hat also
+  nicht abgelehnt, es wurde nie gefragt.
+- `is_auto_deploy_enabled = true` — an der Einstellung lag es nicht.
+- `http://92.5.112.7:8000/` → Timeout. `https://coolify.juliusrummel.de/webhooks/source/github/events`
+  → antwortet.
+- **Beweis an der Quelle:** `GET /app/hook/config` der GitHub-App `prickly-porpoise-ikwok4skcc0g4`
+  (app_id 2302285) lieferte `"url": "http://92.5.112.7:8000/webhooks/source/github/events"`.
+
+**Ursache:** Die Webhook-URL wird beim Anlegen der GitHub-App **fest in GitHub geschrieben** und
+wandert NICHT mit, wenn die Coolify-Instanz umzieht. Die App wurde am 16.11.2025 angelegt, als
+Coolify noch unter `IP:8000` lief. Am 11.08.2026 zog Coolify hinter `coolify.juliusrummel.de` und
+Port 8000 wurde geschlossen — seitdem laufen alle Push-Events ins Leere. Der Push vom 25.08. war
+der erste auf `main` seit dem 26.06., deshalb fiel es erst jetzt auf.
+
+**Was gemacht wurde (reproduzierbar):**
+1. App-JWT (RS256, 9 Min gültig) mit dem in Coolify hinterlegten Private Key der GitHub-App
+   signiert — komplett **innerhalb** des `coolify`-Containers via `php artisan tinker`, damit
+   weder Key noch JWT das System verlassen.
+2. `PATCH /app/hook/config` → URL auf `https://coolify.juliusrummel.de/webhooks/source/github/events`,
+   anschließend per `GET` verifiziert.
+3. `GET /app/hook/deliveries` → die fehlgeschlagene Zustellung des Pushes identifiziert:
+   id `3838990641421901824`, repo `JuliusRu/City-Ranking`, ref `refs/heads/main`, after `559d652`,
+   **Status 502**.
+4. `POST /app/hook/deliveries/3838990641421901824/attempts` → 202. Bewusst nur diese eine
+   erneut zugestellt, nicht die der anderen Repos.
+5. Coolify reihte daraufhin Deployment 268 ein (`in_progress`), Docker-Build auf dem VPS,
+   ~5 Minuten, danach Container mit Image-Tag `559d652`.
+6. Temporäre Skripte und das JWT im Container gelöscht (`/tmp/gh_*.php`, `/tmp/gh_jwt.txt`).
+
+**Verifikation (live gegen www.ranking.place):**
+- Container-Image `3dfeae8` → **`559d652`**, Queue-Status `finished`.
+- `POST /api/visits` mit `comment: null` → vorher **400** (`expected string, received null`),
+  jetzt **401** (Validierung bestanden, nur Session fehlt). Das ist der präzise Live-Marker:
+  die Validierung läuft im Code VOR dem Auth-Check, deshalb lässt sich der Fix ohne Login prüfen,
+  ohne dass etwas geschrieben wird.
+- `/`, `/login`, `/api/cities/search?q=Tokyo` → jeweils 200.
+
+**Nebenbefunde:**
+- Alle 15 letzten Webhook-Zustellungen der GitHub-App waren 502 — betroffen waren
+  `project-overview`, `AlphaCap-Database`, `Media-Knowledge`. **Keines davon ist eine Coolify-App**,
+  es hängt also kein weiterer Deploy fest. Manuelle Deploys aus der Coolify-Oberfläche waren nie
+  betroffen (q-matrix-rcm am 18.08.) — nur der automatische Auslöser war tot.
+- **Env-Dubletten bei App 5:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` und
+  `OPENROUTER_API_KEY` existieren je zweimal. Die Werte sind **identisch** (über SHA-256-Fingerprint
+  verglichen, ohne die Werte auszugeben) → harmlos, reine Aufräumarbeit in der Oberfläche.
+  Nebenbei erledigt: `OPENROUTER_API_KEY` IST in Coolify gesetzt — der offene Punkt aus dem
+  26.06.-Eintrag ist damit abgehakt.
+- **Deploy-Rahmenbedingungen der App:** Build-Pack `dockerfile` (`/Dockerfile`), Port 3000,
+  **kein Healthcheck aktiviert** (Coolify wartet also nicht auf eine gesunde neue Instanz, bevor
+  Traefik umschwenkt). VPS: 1 ARM-Kern, 5,9 GB RAM, **kein Swap**, 29 GB Platte frei — der
+  Next.js-Build ist der Engpass, hier ~5 Minuten.
+
+**Lehre fürs nächste Mal:** Zieht die Coolify-Instanz auf eine neue FQDN um, muss die
+Webhook-URL in **jeder** GitHub-App von Hand nachgezogen werden. Coolify tut das nicht selbst,
+und es fällt erst beim nächsten Push auf — potenziell Wochen später.
+
+---
+
 ## 2026-08-25 · Bugfix: „Add Visit" schlug still fehl, wenn das Kommentar-Feld leer war
 
 **Symptom:** Add-Visit-Formular komplett ausgefüllt (Dubai, 16.–23.06., Rating 9.6, Foto,
