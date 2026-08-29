@@ -60,6 +60,13 @@ Duplikat-Fall, ohne Migration und ohne Risiko für bestehende Zeilen.
 **Verifikation:** `tsc --noEmit`, `eslint` und `next build` grün; Dubletten-Abfrage in Prod
 liefert 0 Zeilen.
 
+**Nachgetragen:** Die Migration `20260707000000_revoke_anon_grants_core_tables` (07.07., am
+08.07. auf Prod angewendet, in `_prisma_migrations` verzeichnet) lag seit sieben Wochen
+**untracked** im Haupt-Checkout und war nie committet. Ein frischer Klon hätte damit eine
+Migrationshistorie gehabt, die nicht zur Prod-DB passt — `prisma migrate deploy` hätte sie
+erneut anwenden wollen. Jetzt auf `main`. Inhalt unverändert (SHA-256 gegengeprüft), rein
+additiv/idempotent (RLS einschalten + anon/authenticated-Grants entziehen).
+
 **Am Rande:** `src/hooks/useCities.ts` hat keinen einzigen Aufrufer mehr — der Hook holte die
 komplette Städteliste und wurde nur vom alten 409-Fallback gebraucht. Kandidat zum Löschen.
 
