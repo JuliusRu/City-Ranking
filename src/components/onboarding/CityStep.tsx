@@ -22,9 +22,9 @@ interface DraftCity {
 
 const DEFAULT_RATING = 70;
 
-// Create-or-find a city, returning its DB id. Mirrors VisitForm.handleCitySelect:
-// POST /api/cities returns 201 + the new city, or 409 if it already exists — in
-// which case we look it up by name+country in the existing catalog.
+// Resolve a picked city to its DB id. POST /api/cities is find-or-create: it
+// returns 201 for a city we didn't have and 200 for one we already knew, so a
+// re-geocode of a known city no longer produces a second row.
 async function resolveCityId(c: DraftCity): Promise<string | null> {
   const res = await fetch("/api/cities", {
     method: "POST",
@@ -41,16 +41,6 @@ async function resolveCityId(c: DraftCity): Promise<string | null> {
   });
   const data = await res.json();
   if (data.success) return data.data.id as string;
-  if (res.status === 409) {
-    const all = await fetch("/api/cities").then((r) => r.json());
-    if (all.success) {
-      const existing = all.data.find(
-        (x: { name: string; country: string }) =>
-          x.name === c.name && x.country === c.country
-      );
-      if (existing) return existing.id as string;
-    }
-  }
   return null;
 }
 

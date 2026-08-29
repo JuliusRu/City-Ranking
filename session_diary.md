@@ -7,6 +7,64 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## 2026-08-25 · Städte-Katalog: Auth-Check nachgezogen + Dubletten-Ursache behoben
+
+**Zwei Befunde von heute Vormittag abgearbeitet.**
+
+### 1. `POST /api/cities` hatte keinen Auth-Check
+
+Der Endpunkt prüfte nur ein Rate-Limit (20/Min pro IP) und schrieb dann in `cities` —
+**ohne `getCurrentUserId()`**. Jeder im Netz konnte anonym beliebige Städte anlegen. Genau
+deshalb entstand heute die zweite Dubai-Zeile, obwohl der eigentliche Visit-Request scheiterte:
+der Städte-Schritt fragt niemanden. Kein Leseleck (RLS + keine Policies), aber unkontrollierter
+Datenmüll in der Tabelle, die Stats, Millionenstadt-Zählung und Community-Ratings speist.
+Jetzt dasselbe Muster wie in allen anderen Write-Endpunkten: Session lesen, sonst 401.
+
+### 2. Dieselbe Stadt landete mehrfach im Katalog
+
+**Befund in Prod:** drei Dubletten — Berlin, Hamburg, Dubai. Muster jedes Mal identisch: eine
+Seed-Zeile vom 12.03. mit gerundeten Koordinaten und ohne `externalId`, dazu eine später
+geocodete Zeile mit präzisen Koordinaten und `relation/…`-Id.
+
+**Ursache:** Der Unique-Key ist `[name, country, latitude, longitude]`. Dieselbe Stadt zweimal
+geocodet ergibt minimal verschiedene Koordinaten → der Key greift nicht → neue Zeile. Der Client
+fing das über einen 409-Fallback ab (Liste holen, nach name+country suchen), aber der 409 kommt
+eben nur bei *exakt* gleichen Koordinaten. Folge: gespaltene Städte verfälschen Stats und
+Community-Ratings — und wenn die neue Zeile keine `population` hat (Nominatim liefert sie nicht
+immer), zählt die Stadt nicht mehr als Millionenstadt.
+
+**Fix — `POST /api/cities` ist jetzt find-or-create:**
+- Kandidaten über `externalId` ODER name+country (case-insensitive) suchen.
+- Treffer akzeptieren, wenn die `externalId` exakt passt oder die Koordinaten **< 100 km**
+  auseinanderliegen. Der Radius trennt „dieselbe Stadt, anders geocodet" (Dubai: 15 km) von
+  „zwei Orte mit gleichem Namen" (die vielen US-Springfields liegen hunderte km auseinander).
+- Beim Treffer wird ergänzt, was die neue Geocodierung weiß und die Zeile nicht: fehlende
+  `population` (treibt das Millionenstadt-Badge) und fehlende `externalId` (macht den nächsten
+  Treffer exakt).
+- Antwort: **200** bei Treffer, **201** bei Neuanlage — beide mit der Stadt im Body.
+- Damit entfällt die 409-Akrobatik in `VisitForm.handleCitySelect` und `CityStep.resolveCityId`;
+  beide wurden entschlackt. `VisitForm` zeigt jetzt zusätzlich einen Fehler an, wenn die Stadt
+  nicht aufgelöst werden konnte, statt stillschweigend ohne `cityId` weiterzumachen.
+
+**Kein Schema-Eingriff.** Der Unique-Key bleibt wie er ist — die Logik davor verhindert den
+Duplikat-Fall, ohne Migration und ohne Risiko für bestehende Zeilen.
+
+**Datenbereinigung in Prod** (eine Transaktion, vorher auf Konflikte mit dem Visit-Unique-Key
+`[user_id, city_id, start_date]` geprüft — keine):
+- Überlebende Zeile je Paar = die mit den meisten Visits; sie bekam die `externalId` (und bei
+  Dubai den `state`) der Dublette.
+- Visits der Dubletten umgehängt, **dann** gelöscht (die FK cascade hätte sie sonst mitgerissen).
+- Ergebnis: Berlin 4+1 → **5 Visits**, Hamburg 2+1 → **3**, Dubai **2**; `visits` gesamt 122,
+  keine Dublette mehr im Katalog.
+
+**Verifikation:** `tsc --noEmit`, `eslint` und `next build` grün; Dubletten-Abfrage in Prod
+liefert 0 Zeilen.
+
+**Am Rande:** `src/hooks/useCities.ts` hat keinen einzigen Aufrufer mehr — der Hook holte die
+komplette Städteliste und wurde nur vom alten 409-Fallback gebraucht. Kandidat zum Löschen.
+
+---
+
 ## 2026-08-25 · Coolify-Auto-Deploy war seit dem 11.08. tot — Webhook-URL repariert
 
 **Ausgangslage:** Der Bugfix (`559d652`) lag auf `main`, aber auf www.ranking.place lief

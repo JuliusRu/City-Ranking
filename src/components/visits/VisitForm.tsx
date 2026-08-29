@@ -127,19 +127,12 @@ export function VisitForm({ visit, prefill }: VisitFormProps) {
 
       const data = await res.json();
 
+      // The endpoint is find-or-create: 200 for a city we already had, 201 for a
+      // new one. Either way it returns the row this visit should hang off.
       if (data.success) {
         setCityId(data.data.id);
-      } else if (res.status === 409) {
-        // City already exists — fetch it
-        const searchRes = await fetch("/api/cities");
-        const searchData = await searchRes.json();
-        if (searchData.success) {
-          const existing = searchData.data.find(
-            (c: { name: string; country: string }) =>
-              c.name === city.name && c.country === city.country
-          );
-          if (existing) setCityId(existing.id);
-        }
+      } else {
+        setErrors({ city: data.error || "Could not save city. Please try again." });
       }
     } catch {
       setErrors({ city: "Could not save city. Please try again." });

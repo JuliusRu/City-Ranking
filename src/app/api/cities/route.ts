@@ -84,6 +84,31 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Rough great-circle distance in km. Used only to tell "the same city, geocoded
+// twice" apart from "two different places that share a name".
+function distanceKm(
+  aLat: number,
+  aLon: number,
+  bLat: number,
+  bLon: number
+): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// Two geocodes of the same city differ in coordinate precision (Dubai came back
+// as 25.2/55.27 once and 25.0742823/55.1885624 another time). Anything within
+// this radius of an existing same-named city in the same country is treated as
+// that city rather than a new one; genuinely distinct places sharing a name
+// (the many US Springfields) sit far outside it.
+const SAME_CITY_RADIUS_KM = 100;
+
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
   const { allowed } = rateLimit(
@@ -96,6 +121,56 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = createCitySchema.safeParse(body);
     if (!parsed.success) return apiValidationError(parsed.error);
+
+    // Writing to the shared city catalogue requires a session, like every other
+    // write endpoint. Without this, anyone could add rows anonymously.
+    const userId = await getCurrentUserId();
+    if (!userId) return apiUnauthorized();
+
+    const { name, country, latitude, longitude, externalId, population } =
+      parsed.data;
+
+    // Find-or-create. The unique key is [name, country, latitude, longitude], so
+    // matching on it alone lets a re-geocode of a known city create a duplicate
+    // row — which then splits that city's stats, community rating and (when the
+    // new row has no population) its million-city status.
+    const candidates = await prisma.city.findMany({
+      where: {
+        OR: [
+          ...(externalId ? [{ externalId }] : []),
+          {
+            name: { equals: name, mode: "insensitive" as const },
+            country: { equals: country, mode: "insensitive" as const },
+          },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const existing =
+      candidates.find((c) => externalId && c.externalId === externalId) ??
+      candidates.find(
+        (c) =>
+          distanceKm(c.latitude, c.longitude, latitude, longitude) <=
+          SAME_CITY_RADIUS_KM
+      );
+
+    if (existing) {
+      // Fill in what this geocode knows and the stored row doesn't. Population
+      // drives the million-city badge; externalId makes the next match exact.
+      const patch: { population?: number; externalId?: string } = {};
+      if (existing.population == null && population != null) {
+        patch.population = population;
+      }
+      if (!existing.externalId && externalId) {
+        patch.externalId = externalId;
+      }
+      const city =
+        Object.keys(patch).length > 0
+          ? await prisma.city.update({ where: { id: existing.id }, data: patch })
+          : existing;
+      return apiSuccess(city, 200);
+    }
 
     const city = await prisma.city.create({
       data: parsed.data,
