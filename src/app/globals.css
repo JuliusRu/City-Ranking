@@ -1,46 +1,72 @@
 @import "tailwindcss";
 
-/* "Atlas" brand — nature palette: earth canvas, sky-blue brand, sage success,
-   terracotta accent. Dark is the app default (set on <html> in layout.tsx); these
-   light values apply when a user switches theme in settings. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   "Terrain" — Designrichtung: die 0–10-Bewertung ist eine Höhenskala.
 
-/* Light theme (warm paper) */
+   Der Grund ist eine Seekarte bei Nacht (Blaugrün mit echtem Buntanteil, nicht
+   Neutralgrau), die Akzente kommen aus der Höhenskala selbst: Ocker trägt die
+   Aktionen, weil es aus derselben warmen Hälfte kommt. Ein Farbsystem statt zwei.
+
+   Dunkel ist Standard (gesetzt auf <html> in layout.tsx); die :root-Werte
+   greifen, wenn ein Nutzer in den Einstellungen auf hell wechselt.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Helles Theme — kühles Kartenweiß, kein Cremepapier */
 :root {
-  --background: #faf6ef;
-  --foreground: #2b2117;
-  --card: #fffdf9;
-  --card-foreground: #2b2117;
-  --primary: #3e7e98;
+  --background: #eff4f3;
+  --foreground: #0c2028;
+  --card: #ffffff;
+  --card-foreground: #0c2028;
+  --primary: #9c5a22;
   --primary-foreground: #ffffff;
-  --muted: #ece3d5;
-  --muted-foreground: #7a6e5c;
-  --border: #ddd2c0;
-  --accent: #f2eadd;
-  --destructive: #c0503f;
-  /* Brand accents — sage green = success/positive, terracotta = warm accent */
-  --leaf: #5e7e44;
+  --muted: #e2ecea;
+  --muted-foreground: #4e6a70;
+  --border: #cfdedb;
+  --accent: #e7f0ee;
+  --destructive: #b4402c;
+  /* Stufen der Höhenskala, die auch außerhalb von Bewertungen gebraucht werden */
+  --leaf: #3d6b45;
   --leaf-foreground: #ffffff;
-  --earth: #a9682f;
+  --earth: #8a6f28;
   --earth-foreground: #ffffff;
+  /* Flächige Aktionsfarbe — dunkel genug, dass weiße Schrift darauf trägt */
+  --action: #8f4e1c;
 }
 
-/* Dark theme (espresso — default) */
+/* Dunkles Theme (Standard) — Tiefenzonen einer Seekarte */
 .dark {
-  --background: #1c1814;
-  --foreground: #ede6da;
-  --card: #2a241d;
-  --card-foreground: #ede6da;
-  --primary: #5b9bb5;
-  --primary-foreground: #0c2129;
-  --muted: #3d352b;
-  --muted-foreground: #a89a87;
-  --border: #3d352b;
-  --accent: #332b22;
-  --destructive: #d9695c;
-  --leaf: #7a9b5e;
-  --leaf-foreground: #0e1a08;
-  --earth: #c08552;
-  --earth-foreground: #241608;
+  --background: #0a181e;
+  --foreground: #e4edeb;
+  --card: #102630;
+  --card-foreground: #e4edeb;
+  --primary: #d08a4a;
+  --primary-foreground: #1b0e04;
+  --muted: #16323e;
+  --muted-foreground: #8ba5a8;
+  --border: #1f3d49;
+  --accent: #16323e;
+  --destructive: #d2624e;
+  --leaf: #4a7a52;
+  --leaf-foreground: #061208;
+  --earth: #b99b4d;
+  --earth-foreground: #1b1405;
+  --action: #a65a22;
+}
+
+/* ── Die Höhenskala ─────────────────────────────────────────────────────────
+   Acht Stützstellen, in BEIDEN Themes identisch — eine Karte hat eine Legende.
+   Quelle der Wahrheit ist `src/lib/rating.ts`; diese Variablen sind dieselben
+   Werte für den Fall, dass eine Fläche sie direkt in CSS braucht. */
+:root,
+.dark {
+  --terrain-00: #10333c; /* Tiefsee   0,0 */
+  --terrain-02: #1b5a5b; /* Schelf    2,5 */
+  --terrain-04: #3d7350; /* Tiefland  4,5 */
+  --terrain-06: #7a8c49; /* Hügel     6,2 */
+  --terrain-07: #b0954a; /* Steppe    7,5 */
+  --terrain-08: #d0a45e; /* Hochland  8,5 */
+  --terrain-09: #e5c48f; /* Grat      9,3 */
+  --terrain-10: #f6edda; /* Gipfel   10,0 */
 }
 
 @theme inline {
@@ -59,52 +85,77 @@
   --color-leaf-foreground: var(--leaf-foreground);
   --color-earth: var(--earth);
   --color-earth-foreground: var(--earth-foreground);
+  --color-action: var(--action);
+  --color-terrain-00: var(--terrain-00);
+  --color-terrain-02: var(--terrain-02);
+  --color-terrain-04: var(--terrain-04);
+  --color-terrain-06: var(--terrain-06);
+  --color-terrain-07: var(--terrain-07);
+  --color-terrain-08: var(--terrain-08);
+  --color-terrain-09: var(--terrain-09);
+  --color-terrain-10: var(--terrain-10);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+
+  /* Kartusche statt runder Karte: rechtwinklige Felder mit Haarlinie, wie der
+     Titelblock einer Landkarte. Hier zentral gedreht, damit jedes bestehende
+     `rounded-xl` / `rounded-2xl` im Code sofort mitzieht — eine Änderung,
+     ganze App. `rounded-full` (Avatare, Pills) bleibt unberührt. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 5px;
 }
 
-/* ── Design tokens: brand gradient + liquid-glass material ──────────────────
-   Both are defined ONCE here and consumed via the classes below, so every
-   gradient/glass surface in the app is literally the same material — the rule
-   that keeps it from looking patched-together. */
-
-:root {
-  /* "Horizon" — sky-blue easing into a deeper teal/indigo. */
-  --brand-grad: linear-gradient(135deg, #5b9bb5 0%, #46789a 50%, #4a5f9e 100%);
-}
-.dark {
-  --brand-grad: linear-gradient(135deg, #6fb0c8 0%, #4f8aa8 48%, #5a6db0 100%);
-}
-
-/* Gradient accents — use SPARINGLY: one hero element per view + primary actions. */
+/* ── Marken-Flächen ─────────────────────────────────────────────────────────
+   Der frühere blaue Verlauf ist raus. Die Klassennamen bleiben, damit kein
+   Bauteil angefasst werden muss — sie zeigen jetzt nur auf flache Farbe.
+   Verlaufstext auf Überschriften war das deutlichste Erkennungszeichen der
+   generischen Vorlage; er wird zu normaler Schriftfarbe. */
 .bg-gradient-brand {
-  background-image: var(--brand-grad);
+  background-color: var(--action);
+  background-image: none;
 }
 .text-gradient-brand {
-  background-image: var(--brand-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background-image: none;
+  color: var(--foreground);
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
 }
 
-/* Liquid-glass material — translucent + blur + hairline top highlight + depth.
-   Sets only the *material* (no border/radius), so each consumer adds its own
-   shape. Use ONLY on chrome floating over imagery (header, globe overlays,
-   modals) — never on content cards over the flat background. */
+/* Liquid-Glass — bleibt als Material für Chrome über Bildern (Header,
+   Globus-Overlays, Modals), nur auf den neuen Untergrund abgestimmt. */
 .glass {
-  background-color: var(--card); /* fallback if color-mix unsupported */
-  background-color: color-mix(in srgb, var(--card) 62%, transparent);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  background-color: var(--card);
+  background-color: color-mix(in srgb, var(--card) 68%, transparent);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
-    0 8px 30px rgb(0 0 0 / 0.25);
+    inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+    0 8px 30px rgb(0 0 0 / 0.3);
+}
+
+/* Gradnetz — die Seite steht auf einem Koordinatenraster statt auf leerer
+   Fläche. Sehr leise; es strukturiert, es dekoriert nicht. */
+.graticule {
+  background-image:
+    repeating-linear-gradient(to right, var(--border) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(to bottom, var(--border) 0 1px, transparent 1px 88px);
+  background-position: center top;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Koordinaten, Einwohnerzahlen und Bewertungen stehen in Listen untereinander
+   und dürfen nicht tanzen. */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Globe container fills available space */

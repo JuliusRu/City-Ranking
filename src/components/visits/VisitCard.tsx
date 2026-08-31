@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import type { VisitWithCity } from "@/types";
 
 interface VisitCardProps {
@@ -44,8 +44,8 @@ export function VisitCard({ visit, onDelete }: VisitCardProps) {
           <div
             className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg text-lg font-bold"
             style={{
-              backgroundColor: `${ratingToColor(visit.rating)}20`,
-              color: ratingToColor(visit.rating),
+              backgroundColor: ratingToColor(visit.rating),
+              color: ratingTextColor(visit.rating),
             }}
           >
             {ratingToDisplay(visit.rating)}

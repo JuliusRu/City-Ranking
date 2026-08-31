@@ -1,6 +1,6 @@
 "use client";
 
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 
 interface RatingProps {
   value: number; // 0-100
@@ -38,8 +38,8 @@ export function Rating({ value, onChange, label, error }: RatingProps) {
         <div
           className="flex h-10 w-14 items-center justify-center rounded-lg text-sm font-bold"
           style={{
-            backgroundColor: `${ratingToColor(value)}20`,
-            color: ratingToColor(value),
+            backgroundColor: ratingToColor(value),
+            color: ratingTextColor(value),
           }}
         >
           {ratingToDisplay(value)}

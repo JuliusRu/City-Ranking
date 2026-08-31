@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import { timeAgo } from "@/lib/timeago";
 import { LikeButton } from "./LikeButton";
 import { FollowButton } from "./FollowButton";
@@ -51,8 +51,8 @@ export function FeedCard({ item }: { item: FeedItem }) {
         <div
           className="flex h-11 w-12 flex-shrink-0 items-center justify-center rounded-lg text-base font-bold"
           style={{
-            backgroundColor: `${ratingToColor(item.rating)}20`,
-            color: ratingToColor(item.rating),
+            backgroundColor: ratingToColor(item.rating),
+            color: ratingTextColor(item.rating),
           }}
         >
           {ratingToDisplay(item.rating)}

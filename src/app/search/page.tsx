@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearch } from "@/hooks/useSearch";
 import { Avatar } from "@/components/ui/Avatar";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -93,8 +93,8 @@ export default function SearchPage() {
                       <div
                         className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                         style={{
-                          backgroundColor: `${ratingToColor(c.avgRating)}20`,
-                          color: ratingToColor(c.avgRating),
+                          backgroundColor: ratingToColor(c.avgRating),
+                          color: ratingTextColor(c.avgRating),
                         }}
                       >
                         {ratingToDisplay(c.avgRating)}

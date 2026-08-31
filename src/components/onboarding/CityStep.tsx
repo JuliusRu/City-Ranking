@@ -5,7 +5,7 @@ import { useCitySearch } from "@/hooks/useCitySearch";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { Rating } from "@/components/ui/Rating";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import type { GeocodingResult } from "@/lib/geocoding";
 
 // A geocoded city the user wants to log, plus the rating they'll give it.
@@ -288,8 +288,8 @@ export function CityStep({ onComplete }: { onComplete: () => void }) {
                   <span
                     className="flex h-7 w-11 items-center justify-center rounded-md text-xs font-bold"
                     style={{
-                      backgroundColor: `${ratingToColor(c.rating)}20`,
-                      color: ratingToColor(c.rating),
+                      backgroundColor: ratingToColor(c.rating),
+                      color: ratingTextColor(c.rating),
                     }}
                   >
                     {ratingToDisplay(c.rating)}

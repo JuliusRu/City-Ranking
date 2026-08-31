@@ -4,7 +4,7 @@ import { useStats } from "@/hooks/useStats";
 import { StatCard } from "@/components/stats/StatCard";
 import { BarChart } from "@/components/stats/BarChart";
 import { DonutChart } from "@/components/stats/DonutChart";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 
 export default function StatsPage() {
   const { stats, isLoading, error } = useStats();
@@ -66,8 +66,11 @@ export default function StatsPage() {
           <p className="text-sm text-muted-foreground">Avg Rating</p>
           <div className="mt-1 flex items-baseline gap-2">
             <span
-              className="text-3xl font-bold"
-              style={{ color: ratingToColor(stats.avgRating) }}
+              className="tabular inline-flex h-11 items-center rounded-lg px-3 text-3xl font-bold"
+              style={{
+                backgroundColor: ratingToColor(stats.avgRating),
+                color: ratingTextColor(stats.avgRating),
+              }}
             >
               {ratingToDisplay(stats.avgRating)}
             </span>
@@ -104,8 +107,8 @@ export default function StatsPage() {
                 <span
                   className="rounded-md px-2 py-0.5 text-xs font-bold"
                   style={{
-                    backgroundColor: `${ratingToColor(city.avgRating)}20`,
-                    color: ratingToColor(city.avgRating),
+                    backgroundColor: ratingToColor(city.avgRating),
+                    color: ratingTextColor(city.avgRating),
                   }}
                 >
                   {ratingToDisplay(city.avgRating)}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import type { GlobeMarker } from "@/types";
 
 interface VisitSidebarProps {
@@ -110,8 +110,8 @@ export function VisitSidebar({ markers, onFlyTo, readOnly = false }: VisitSideba
               <div
                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-xs font-bold"
                 style={{
-                  backgroundColor: `${ratingToColor(marker.rating)}20`,
-                  color: ratingToColor(marker.rating),
+                  backgroundColor: ratingToColor(marker.rating),
+                  color: ratingTextColor(marker.rating),
                 }}
               >
                 {ratingToDisplay(marker.rating)}

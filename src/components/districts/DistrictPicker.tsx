@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useDistrictSearch } from "@/hooks/useDistrictSearch";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import { DISTRICT_FREQUENCIES } from "@/config/constants";
 import type { DistrictFrequency } from "@/types";
 
@@ -177,8 +177,8 @@ export function DistrictPicker({ city, value, onChange }: DistrictPickerProps) {
                   <div
                     className="flex h-9 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                     style={{
-                      backgroundColor: `${ratingToColor(d.rating)}20`,
-                      color: ratingToColor(d.rating),
+                      backgroundColor: ratingToColor(d.rating),
+                      color: ratingTextColor(d.rating),
                     }}
                   >
                     {ratingToDisplay(d.rating)}

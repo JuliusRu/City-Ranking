@@ -7,6 +7,60 @@ Format pro Eintrag: Datum · Was · Warum · Auswirkung/Status · ggf. offene Pu
 
 ---
 
+## 2026-08-29 · Design-Prototyp „Terrain" (Branch `design/terrain`, nicht auf main)
+
+**Warum:** Die Oberfläche las sich als generische Vorlage — Verlaufsüberschrift auf
+Fast-Schwarz, acht identische `rounded-2xl`-Karten, Emoji als Icons, und eine Palette,
+deren Kommentar „warme Erde" verspricht, während Grund `#1c1814` und Karte `#2a241d`
+nur 6 % Helligkeit trennen. Dazu ein himmelblauer Marken-Verlauf gegen eine Erdton-Palette:
+zwei Identitäten, die sich neutralisieren.
+
+**Die Idee:** Die 0–10-Bewertung wird als **Höhe** gelesen, nicht als Note. Atlanten färben
+Höhe seit zweihundert Jahren nach derselben Folge — Tiefsee, Tiefland, Steppe, Hochland,
+Gipfel. Damit wird aus einer Liste ein Relief, und aus einer Bewertung eine Sammlung.
+Der Grund wird zur Seekarte bei Nacht (Blaugrün mit Buntanteil statt Neutralgrau), die
+Akzentfarbe kommt aus derselben Skala statt aus einem zweiten System.
+
+**Umgesetzt sind Schritt 1 und 2 des Vierschrittplans:**
+- `globals.css`: alle Farb-Tokens getauscht; Höhenskala als `--terrain-*`; **Radius zentral
+  über `--radius-*` im `@theme`-Block** auf 2–5 px gedreht, wodurch jedes bestehende
+  `rounded-xl`/`rounded-2xl` ohne Bauteil-Änderung mitzieht; `.text-gradient-brand` wird
+  flache Schriftfarbe, `.bg-gradient-brand` flaches Ocker (Klassennamen bleiben, damit
+  keine Komponente angefasst werden muss).
+- `lib/rating.ts`: `ratingToColor()` liefert die Höhenskala; neu `ratingTextColor()`
+  (Schriftfarbe nach WCAG-Luminanz) und `ratingToBand()`.
+
+**Nötige Folgeänderung, 13 Dateien:** Dasselbe Muster stand 18-mal im Code —
+`backgroundColor: ${ratingToColor(x)}20` plus `color: ratingToColor(x)`. Das funktionierte
+nur, weil die alte Skala über den ganzen Bereich dieselbe Helligkeit hatte. Mit einer
+Skala, die dunkel beginnt, wäre die Ziffer auf dunklem Grund unsichtbar geworden. Jetzt:
+gefüllte Fläche in der Höhenfarbe, Schrift über `ratingTextColor()`. **Ausnahme:**
+`GlobeViewer` — dort ist `color` die Füllfarbe der Kartenmarker, kein Text, und bleibt
+`ratingToColor()`.
+
+**Zwei Fehler, die erst der Prototyp mit echten Daten zeigte:**
+1. Reale Bewertungen liegen fast alle zwischen 7,0 und 9,5. Die erste Skala war dort zu
+   eng — 8,2 und 9,2 sahen gleich aus. Stützstellen im oberen Bereich gespreizt.
+2. Schwerwiegender: die Luminanz stieg **nicht** monoton. Zwischen 7,5 (Gold) und 8,5
+   (Ocker) fiel sie ab, weil Karten-Ocker dunkler ist als das Gold darunter. Genau die
+   Monotonie ist aber die ganze Begründung der Skala — ohne sie funktioniert sie weder in
+   Graustufen noch bei Rot-Grün-Schwäche. Stufen deshalb **nach Ziel-Luminanz** neu gesetzt
+   (0,028 → 0,852, in 2er-Schritten geprüft, keine Rückschritte) und die Invariante als
+   Kommentar in `rating.ts` festgehalten.
+
+**Verifikation:** `tsc` grün, `next build` grün (39 Routen). Lokal gegen die Docker-Postgres
+mit Demo-Daten angesehen: Profil, Globus, Bewertungsspalte — in **beiden** Themes geprüft.
+Die verbleibenden eslint-Fehler (`login/page.tsx`, `Header.tsx`, verwaistes
+`eslint-disable` in `GlobeViewer`) sind älter und nicht Teil dieser Änderung.
+
+**Noch offen (Schritt 3 und 4):** Schriftpaarung (Archivo breit für Städtenamen,
+DM Mono für Koordinaten, Instrument Sans für Fließtext — braucht eine CSP-Anpassung für
+Google Fonts), Emoji durch gezeichnete Glyphen ersetzen, Kartuschen-Kopfzeile als
+Karten-Bauteil, und der Landing-Hero (Höhenprofil statt Verlaufsüberschrift — dort muss
+der Globus endlich sauber rendern, statt als schwarzer Kasten zu erscheinen).
+
+---
+
 ## 2026-08-25 · Städte-Katalog: Auth-Check nachgezogen + Dubletten-Ursache behoben
 
 **Zwei Befunde von heute Vormittag abgearbeitet.**

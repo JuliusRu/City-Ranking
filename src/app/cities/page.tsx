@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCityOverviews } from "@/hooks/useCities";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import { Container } from "@/components/layout/Container";
 
 type SortBy = "ranking" | "name" | "visitCount" | "lastVisited";
@@ -122,8 +122,8 @@ export default function CitiesPage() {
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold"
                 style={{
-                  backgroundColor: `${ratingToColor(city.avgRating)}20`,
-                  color: ratingToColor(city.avgRating),
+                  backgroundColor: ratingToColor(city.avgRating),
+                  color: ratingTextColor(city.avgRating),
                 }}
               >
                 {ratingToDisplay(city.avgRating)}

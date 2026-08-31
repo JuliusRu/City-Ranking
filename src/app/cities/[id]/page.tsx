@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import { Avatar } from "@/components/ui/Avatar";
 import { DISTRICT_FREQUENCIES } from "@/config/constants";
 
@@ -164,8 +164,8 @@ export default async function CityDetailPage({
             <div
               className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg text-xl font-bold"
               style={{
-                backgroundColor: `${ratingToColor(avgRating)}20`,
-                color: ratingToColor(avgRating),
+                backgroundColor: ratingToColor(avgRating),
+                color: ratingTextColor(avgRating),
               }}
             >
               {ratingToDisplay(avgRating)}
@@ -187,8 +187,8 @@ export default async function CityDetailPage({
             <div
               className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg text-xl font-bold"
               style={{
-                backgroundColor: `${ratingToColor(communityAvg)}20`,
-                color: ratingToColor(communityAvg),
+                backgroundColor: ratingToColor(communityAvg),
+                color: ratingTextColor(communityAvg),
               }}
             >
               {ratingToDisplay(communityAvg)}
@@ -231,8 +231,8 @@ export default async function CityDetailPage({
                 <div
                   className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                   style={{
-                    backgroundColor: `${ratingToColor(d.avgRating)}20`,
-                    color: ratingToColor(d.avgRating),
+                    backgroundColor: ratingToColor(d.avgRating),
+                    color: ratingTextColor(d.avgRating),
                   }}
                 >
                   {ratingToDisplay(d.avgRating)}
@@ -286,8 +286,8 @@ export default async function CityDetailPage({
                     <div
                       className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                       style={{
-                        backgroundColor: `${ratingToColor(r.rating)}20`,
-                        color: ratingToColor(r.rating),
+                        backgroundColor: ratingToColor(r.rating),
+                        color: ratingTextColor(r.rating),
                       }}
                     >
                       {ratingToDisplay(r.rating)}
@@ -321,8 +321,8 @@ export default async function CityDetailPage({
                   <div
                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                     style={{
-                      backgroundColor: `${ratingToColor(visit.rating)}20`,
-                      color: ratingToColor(visit.rating),
+                      backgroundColor: ratingToColor(visit.rating),
+                      color: ratingTextColor(visit.rating),
                     }}
                   >
                     {ratingToDisplay(visit.rating)}

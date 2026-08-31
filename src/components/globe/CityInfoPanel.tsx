@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import type { GlobeMarker } from "@/types";
 
 interface CityInfoPanelProps {
@@ -45,8 +45,8 @@ export function CityInfoPanel({ marker, onClose, onFlyTo, readOnly = false }: Ci
         <div
           className="flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold"
           style={{
-            backgroundColor: `${ratingToColor(marker.rating)}20`,
-            color: ratingToColor(marker.rating),
+            backgroundColor: ratingToColor(marker.rating),
+            color: ratingTextColor(marker.rating),
           }}
         >
           {ratingToDisplay(marker.rating)}

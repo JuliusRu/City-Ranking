@@ -6,7 +6,7 @@ import { useVenues } from "@/hooks/useVenues";
 import { useToast } from "@/components/ui/Toast";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { ratingToColor, ratingToDisplay } from "@/lib/rating";
+import { ratingToColor, ratingToDisplay, ratingTextColor } from "@/lib/rating";
 import { VENUE_TYPES, BUDGET_LEVELS } from "@/config/constants";
 import type { VenueData } from "@/types";
 
@@ -101,8 +101,8 @@ export function VenueList() {
                   <div
                     className="flex h-10 w-12 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold"
                     style={{
-                      backgroundColor: `${ratingToColor(v.rating)}20`,
-                      color: ratingToColor(v.rating),
+                      backgroundColor: ratingToColor(v.rating),
+                      color: ratingTextColor(v.rating),
                     }}
                   >
                     {ratingToDisplay(v.rating)}
