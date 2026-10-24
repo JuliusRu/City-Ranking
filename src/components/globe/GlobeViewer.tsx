@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { GLOBE } from "@/config/constants";
 import { ratingToColor } from "@/lib/rating";
@@ -96,6 +96,12 @@ function toFeatureCollection(markers: GlobeMarker[]): GeoJSON.FeatureCollection 
     })),
   };
 }
+
+// maplibre-gl 6 loads its web worker as a separate file. The bundler cannot
+// resolve MapLibre's own lookup, so the worker is served from public/ (copied by
+// scripts/copy-maplibre-worker.cjs before every build). The version in the query
+// string keeps browsers from reusing a worker of an older MapLibre release.
+maplibregl.setWorkerUrl(`/maplibre-gl-worker.mjs?v=${maplibregl.getVersion()}`);
 
 export function GlobeViewer({
   markers = [],
